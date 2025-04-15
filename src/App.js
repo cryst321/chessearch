@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Games from "./pages/Games";
 import Analyze from "./pages/Analyze";
 import Search from "./pages/Search";
+import GamePage from "./pages/GamePage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
                   <Route path="about" element={<About />} />
                   <Route path="search" element={<Search />} />
                   <Route path="games" element={<Games />} />
+                  <Route path="game/:gameId" element={<GamePage />} />
                   <Route path="analyze" element={<Analyze />} />
                   <Route path="*" element={<NoPage />} />
               </Route>

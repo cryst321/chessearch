@@ -1,0 +1,61 @@
+@import 'src/styles/variables';
+
+.chessboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: $lavender-blush;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(75, 59, 71, 0.3);
+}
+
+.board-wrapper {
+  width: 100%;
+  max-width: 560px;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+
+}
+
+.move-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.move-button {
+  padding: 0.6rem 1.2rem;
+  background-color: $eggplant;
+  color: $lavender-blush;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: 1.05rem;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: lighten($eggplant, 10%);
+  }
+
+  &:disabled {
+    background-color: $battleship-gray;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.move-counter {
+  color: $dim-gray;
+  font-weight: bold;
+  min-width: 100px;
+  text-align: center;
+}
+
+.fen-display {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: $battleship-gray;
+  word-break: break-all;
+}
