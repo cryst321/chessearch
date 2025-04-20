@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { Link } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import './Games.scss';
@@ -13,6 +13,9 @@ const Games = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [hasMore, setHasMore] = useState(true);
+    const [isEditingPage, setIsEditingPage] = useState(false);
+    const [editPageValue, setEditPageValue] = useState('');
+    const pageInputRef = useRef(null);
 
     useEffect(() => {
         const fetchGamePreviews = async () => {
@@ -57,6 +60,59 @@ const Games = () => {
         setCurrentPage(prevPage => Math.max(0, prevPage - 1));
     };
 
+    /* logic for inputing page number manually */
+    const handlePageDisplayClick = () => {
+        setEditPageValue(String(currentPage + 1));
+        setIsEditingPage(true);
+    };
+
+
+    useEffect(() => {
+        if (isEditingPage && pageInputRef.current) {
+            pageInputRef.current.focus();
+            pageInputRef.current.select();
+        }
+    }, [isEditingPage]);
+
+
+    const handlePageInputChange = (e) => {
+        setEditPageValue(e.target.value);
+    };
+
+   /* submitting page input */
+    const handlePageInputSubmit = () => {
+        const targetPageOneBased = parseInt(editPageValue, 10);
+
+        if (!isNaN(targetPageOneBased) && targetPageOneBased >= 1) {
+            const targetPageZeroBased = targetPageOneBased - 1;
+
+            if (targetPageZeroBased !== currentPage) {
+                if (targetPageZeroBased > currentPage && !hasMore) {
+                    console.warn("Attempted to navigate beyond the known last page.");
+                } else {
+                    setCurrentPage(targetPageZeroBased);
+                }
+
+            }
+        } else {
+            console.warn("Invalid page number entered:", editPageValue);
+        }
+
+        setIsEditingPage(false);
+    };
+
+    const handlePageInputKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handlePageInputSubmit();
+        } else if (e.key === 'Escape') {
+            setIsEditingPage(false);
+        }
+    };
+
+    const handlePageInputBlur = () => {
+        setIsEditingPage(false);
+    };
+
     return (
         <div className="games-page-container">
             <h2>Browse Games</h2>
@@ -65,7 +121,7 @@ const Games = () => {
             {error && <div className="error-message">{error}</div>}
 
             {!isLoading && !error && previews.length === 0 && (
-                <p>No games found for this page.</p>
+                <p>You've reached the end!</p>
             )}
 
             <div className="game-previews-grid">
@@ -84,7 +140,7 @@ const Games = () => {
                                         customLightSquareStyle={{ backgroundColor: 'rgb(173,189,143)' }}
                                     />
                                 ) : (
-                                    <div className="board-placeholder">No final position available</div>
+                                    <div className="board-placeholder">Error displaying final position.</div>
                                 )}
                             </div>
                             <div className="preview-details">
@@ -99,7 +155,6 @@ const Games = () => {
             </div>
 
             <div className="pagination-controls">
-
                 <button
                     onClick={goToPrevPage}
                     disabled={currentPage === 0 || isLoading}
@@ -108,7 +163,29 @@ const Games = () => {
                     &larr;
                 </button>
 
-                <span>[ {currentPage + 1} ]</span>
+                {isEditingPage ? (
+                    <input
+                        ref={pageInputRef}
+                        type="number"
+                        className="page-number-input"
+                        value={editPageValue}
+                        onChange={handlePageInputChange}
+                        onKeyDown={handlePageInputKeyDown}
+                        onBlur={handlePageInputBlur}
+                        min="1"
+
+                    />
+                ) : (
+                    <span
+                        className="page-number-display"
+                        onClick={handlePageDisplayClick}
+                        title="Click to enter page number"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }} // Allow activating edit mode with Enter/Space
+                    >
+                        [ {currentPage + 1} ]
+                    </span>
+                )}
 
                 <button
                     onClick={goToNextPage}
@@ -120,6 +197,7 @@ const Games = () => {
             </div>
 
         </div>
+
     );
 };
 
