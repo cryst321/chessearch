@@ -72,8 +72,8 @@ const ChessBoardDisplay = ({ positions }) => {
                         borderRadius: '4px',
                         boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
                     }}
-                    customDarkSquareStyle={{ backgroundColor: '#7D9A74' }}
-                    customLightSquareStyle={{ backgroundColor: '#E8E8E8' }}
+                    customDarkSquareStyle={{ backgroundColor: 'rgb(111,143,114)' }}
+                    customLightSquareStyle={{ backgroundColor: 'rgb(173,189,143)' }}
                 />
             </div>
 

@@ -23,15 +23,19 @@ const GameInfo = ({ game }) => {
             </div>
             <div className="info-item">
                 <span className="info-label">White:</span>
-                <span className="info-value">{game.white || 'N/A'}</span>
+                <span className="info-value">{game.white || 'N/A'} {"("+game.whiteElo+")" || "???"}</span>
             </div>
             <div className="info-item">
                 <span className="info-label">Black:</span>
-                <span className="info-value">{game.black || 'N/A'}</span>
+                <span className="info-value">{game.black || 'N/A'} {"("+game.blackElo+")" || "???"}</span>
             </div>
             <div className="info-item">
                 <span className="info-label">Result:</span>
                 <span className="info-value">{game.result || 'N/A'}</span>
+            </div>
+            <div className="info-item">
+                <span className="info-label">ECO:</span>
+                <span className="info-value">{game.eco || 'N/A'}</span>
             </div>
             <div className="info-item pgn-section">
                 <span className="info-label">PGN:</span>
