@@ -7,6 +7,11 @@ import './Games.scss';
 const API_BASE_URL = 'http://localhost:8080/api/game';
 const PAGE_SIZE = 10;
 
+/**
+ * Page for displaying preview (last FEN position and general details) of 10 games based on pagination and filters
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const Games = () => {
     const [previews, setPreviews] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);

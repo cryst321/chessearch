@@ -35,10 +35,16 @@
 
 
 .pgn-section {
-  margin-top: 1rem;
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  .info-label {
+    margin-bottom: 0.3rem;
+  }
+}
 
+.pgn-textarea-wrapper {
+  position: relative;
+  width: 100%;
 }
 
 .pgn-text {
@@ -52,6 +58,70 @@
   border-radius: 4px;
   background-color: darken($lavender-blush, 2%);
   resize: vertical;
+  &::-webkit-scrollbar {
+    width: 10px; // Example width
+  }
+  &::-webkit-scrollbar-track {
+    background: lighten($pearl, 10%);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: $battleship-gray;
+    border-radius: 4px;
+    border: 2px solid lighten($pearl, 10%);
+  }
+  scrollbar-width: thin;
+  scrollbar-color: $battleship-gray lighten($pearl, 10%);
+  &:focus {
+    outline: 2px solid lighten($eggplant,40%);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
 
 }
+.pgn-copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.8rem;
+  z-index: 2;
 
+  background-color: lighten($lavender-blush,5%);
+  border: 1px solid transparent;
+  padding: 0.2rem 0.3rem;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $dim-gray;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  svg {
+    width: 0.9em;
+    height: 0.9em;
+    stroke: currentColor;
+  }
+  &:hover {
+    background-color: lighten($pearl, 5%);
+    color: $eggplant;
+    border-color: $pearl;
+  }
+  &:focus {
+    outline: 1px solid $pearl;
+    outline-offset: 1px;
+    background-color: lighten($pearl, 5%);
+  }
+  &.copied {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    cursor: default;
+
+    &:hover {
+      color: #3c763d;
+      background-color: #dff0d8;
+      border-color: #d6e9c6;
+    }
+  }
+}

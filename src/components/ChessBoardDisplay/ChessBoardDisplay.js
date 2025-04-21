@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import './ChessBoardDisplay.scss';
+import { FiCopy, FiCheck } from 'react-icons/fi';
 
 const ChessBoardDisplay = ({ positions }) => {
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
     const [currentFen, setCurrentFen] = useState(
         positions && positions.length > 0 ? positions[0]?.fen : 'start'
+    );
+    const [isFenCopied, setIsFenCopied] = useState(false);
+    const CopyIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+    );
+
+    const CheckIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
     );
 
     useEffect(() => {
@@ -16,6 +30,7 @@ const ChessBoardDisplay = ({ positions }) => {
             setCurrentMoveIndex(0);
             setCurrentFen('start');
         }
+        setIsFenCopied(false);
     }, [positions]);
 
 
@@ -38,6 +53,29 @@ const ChessBoardDisplay = ({ positions }) => {
             }
             return newIndex;
         });
+    };
+
+    const handleCopyFen = () => {
+        if (!currentFen || currentFen === 'start') {
+            console.warn("Attempted to copy invalid FEN:", currentFen);
+            return;
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(currentFen)
+                .then(() => {
+                    console.log("FEN copied to clipboard:", currentFen);
+                    setIsFenCopied(true);
+                    setTimeout(() => {
+                        setIsFenCopied(false);
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('Failed to copy FEN: ', err);
+                });
+        } else {
+            console.warn('Clipboard API not available.');
+        }
     };
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -98,7 +136,22 @@ const ChessBoardDisplay = ({ positions }) => {
                 </button>
             </div>
 
-            <p className="fen-display">{currentFen}</p>
+            {/*<p className="fen-display">{currentFen}</p>*/}
+            <div className="fen-container">
+                <p className="fen-display" title={currentFen}>{currentFen}</p>
+                {currentFen && currentFen !== 'start' && ( // Only show button if FEN is valid
+                    <button
+                        onClick={handleCopyFen}
+                        className={`copy-fen-button ${isFenCopied ? 'copied' : ''}`}
+                        aria-label={isFenCopied ? 'FEN Copied!' : 'Copy FEN to clipboard'}
+                        title={isFenCopied ? 'Copied!' : 'Copy FEN'}
+                        type="button"
+                    >
+                        {isFenCopied ? <FiCheck /> : <FiCopy />}
+                    </button>
+                )}
+
+            </div>
 
         </div>
 

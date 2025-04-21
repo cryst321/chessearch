@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ChessBoardDisplay from '../components/ChessBoardDisplay/ChessBoardDisplay';
-import GameInfo from '../components/GameInfo/GameInfo';
+import ChessBoardDisplay from '../../components/ChessBoardDisplay/ChessBoardDisplay';
+import GameInfo from '../../components/GameInfo/GameInfo';
 import './GamePage.scss';
 
 const API_BASE_URL = 'http://localhost:8080/api/game';
@@ -19,7 +19,11 @@ const api = {
     },
 };
 
-
+/**
+ * Page for displaying a chess game and relevant metadata
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const GamePage = () => {
     const { gameId } = useParams();
     const navigate = useNavigate();
@@ -89,10 +93,19 @@ const GamePage = () => {
 
     return (
         <div className="game-page-container">
-            <button onClick={handleBack} className="back-button">
-                &larr; Back to Games List
-            </button>
-            <h1 className="game-page-title">Game Details (ID: {gameId})</h1>
+            <div className="page-header">
+                <button
+                    onClick={handleBack}
+                    className="back-button icon-button"
+                    aria-label="Back to Games List"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+            <h1 className="game-page-title">{gameData.white} vs. {gameData.black} (ID: {gameId})</h1>
+                 <div style={{ width: 'button-width-plus-margin' }}></div>
+            </div>
             <div className="game-layout">
                 {/* Chessboard */}
                 <div className="chessboard-section">

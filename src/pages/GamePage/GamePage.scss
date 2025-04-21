@@ -1,0 +1,84 @@
+@import '../../styles/variables';
+
+.game-page-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 2rem;
+  min-height: 40px;
+}
+
+.game-page-title {
+  color: $eggplant;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  text-shadow: -1px -1px 1px rgba($lavender-blush, 0.7),
+  1px 1px 1px rgba($dim-gray, 0.6);
+  flex-grow: 1;
+}
+
+.game-page-loading,
+.game-page-error,
+.game-page-not-found {
+  text-align: center;
+  padding: 3rem;
+  color: $dim-gray;
+  font-size: 1.5rem;
+}
+
+.game-page-error {
+  color: darken($eggplant, 10%);
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: $eggplant; ;
+  border: 1px solid $battleship-gray;
+  color: $pearl;
+  padding: 0.4rem;
+  border-radius: 30%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  font-size: inherit;
+
+  svg {
+    width: 1.2em;
+    height: 1.2em;
+    stroke: currentColor;
+  }
+  &:hover {
+    background-color: lighten($pearl, 10%);
+    border-color: $dim-gray;
+    color: $dim-gray;
+  }
+  &:focus {
+    outline: 2px solid $dim-gray;
+    outline-offset: 2px;
+  }
+}
+
+
+.game-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+
+  @media (min-width: 992px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}

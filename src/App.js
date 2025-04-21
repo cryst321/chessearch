@@ -5,10 +5,10 @@ import MainLayout from "./layouts/MainLayout";
 import NoPage from "./pages/NoPage";
 import About from "./pages/About";
 import Home from "./pages/Home";
-import Games from "./pages/Games";
+import Games from "./pages/Games/Games";
 import Analyze from "./pages/Analyze";
 import Search from "./pages/Search";
-import GamePage from "./pages/GamePage";
+import GamePage from "./pages/GamePage/GamePage";
 
 function App() {
   return (
