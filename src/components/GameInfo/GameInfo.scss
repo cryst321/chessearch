@@ -59,7 +59,7 @@
   background-color: darken($lavender-blush, 2%);
   resize: vertical;
   &::-webkit-scrollbar {
-    width: 10px; // Example width
+    width: 10px;
   }
   &::-webkit-scrollbar-track {
     background: lighten($pearl, 10%);

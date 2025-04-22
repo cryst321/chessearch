@@ -186,7 +186,7 @@ const Games = () => {
                         onClick={handlePageDisplayClick}
                         title="Click to enter page number"
                         tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }} // Allow activating edit mode with Enter/Space
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }}
                     >
                         [ {currentPage + 1} ]
                     </span>

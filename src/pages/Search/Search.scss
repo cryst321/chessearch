@@ -1,0 +1,147 @@
+@import '../../styles/variables';
+
+.search-page-container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: $font-family;
+
+  h2 {
+    text-align: center;
+    color: $eggplant;
+    margin-bottom: 2rem;
+  }
+}
+
+.search-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+
+  @media (min-width: 992px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.board-setup-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.board-controls-top {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+
+  flex-wrap: wrap;
+}
+.search-board-wrapper {
+  display: flex;
+  justify-content: center;
+
+}
+
+.fen-input-area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  label {
+    color: $dim-gray;
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .fen-input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid $battleship-gray;
+    border-radius: 4px;
+    font-family: $font-family;
+    min-width: 250px;
+  }
+  .fen-error-message {
+    color: darken($eggplant, 10%);
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+    width: 100%;
+    text-align: right;
+  }
+}
+
+.control-button, .search-button {
+  padding: 0.5rem 1rem;
+  background-color: lighten($eggplant,5%);
+  color: $lavender-blush;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: darken($dim-gray, 10%);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.import-button {
+  background-color: $eggplant;
+  &:hover:not(:disabled) {
+    background-color: lighten($eggplant, 10%);
+  }
+}
+
+
+.search-params-area {
+  border: 1px solid $pearl;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: lighten($lavender-blush, 5%);
+  align-self: center;
+  h3 {
+    margin-top: 0;
+    color: $eggplant;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .param-item {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      color: $dim-gray;
+      min-width: 80px;
+    }
+
+    .param-input {
+      padding: 0.4rem;
+      border: 1px solid $battleship-gray;
+      border-radius: 4px;
+      font-family: $font-family;
+      width: 60px;
+    }
+  }
+
+  .search-button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    background-color: $eggplant;
+    &:hover:not(:disabled) {
+      background-color: lighten($eggplant, 10%);
+    }
+  }
+}
+

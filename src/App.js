@@ -7,7 +7,7 @@ import About from "./pages/About";
 import Home from "./pages/Home";
 import Games from "./pages/Games/Games";
 import Analyze from "./pages/Analyze";
-import Search from "./pages/Search";
+import Search from "./pages/Search/Search";
 import GamePage from "./pages/GamePage/GamePage";
 
 function App() {

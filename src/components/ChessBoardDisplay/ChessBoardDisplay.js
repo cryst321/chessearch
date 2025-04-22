@@ -139,7 +139,7 @@ const ChessBoardDisplay = ({ positions }) => {
             {/*<p className="fen-display">{currentFen}</p>*/}
             <div className="fen-container">
                 <p className="fen-display" title={currentFen}>{currentFen}</p>
-                {currentFen && currentFen !== 'start' && ( // Only show button if FEN is valid
+                {currentFen && currentFen !== 'start' && (
                     <button
                         onClick={handleCopyFen}
                         className={`copy-fen-button ${isFenCopied ? 'copied' : ''}`}
