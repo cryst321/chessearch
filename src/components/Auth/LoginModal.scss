@@ -1,0 +1,139 @@
+@import '../../styles/variables';
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: $font-family;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+
+  &.modal-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.modal-content {
+  background-color: $lavender-blush;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  min-width: 300px;
+  max-width: 450px;
+  width: 90%;
+  z-index: 1001;
+
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.2s ease-in-out 0.1s, transform 0.2s ease-in-out 0.1s;
+
+  .modal-overlay.modal-open & {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+
+  h2 {
+    margin-top: 0;
+    color: $eggplant;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: $dim-gray;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid $battleship-gray;
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: 2px solid $dim-gray;
+        border-color: $dim-gray;
+      }
+      &:disabled {
+        background-color: lighten($pearl, 10%);
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .error-message {
+    color: darken($eggplant, 15%);
+    background-color: lighten($lavender-blush, 5%);
+    border: 1px solid darken($eggplant, 10%);
+    padding: 0.7rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: $font-family;
+      font-size: 1rem;
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+
+    .cancel-button {
+      background-color: $battleship-gray;
+      color: $lavender-blush;
+
+      &:hover:not(:disabled) {
+        background-color: darken($battleship-gray, 10%);
+      }
+      &:disabled {
+        background-color: lighten($battleship-gray, 15%);
+      }
+    }
+
+    .login-button {
+      background-color: $eggplant;
+      color: $pearl;
+
+      &:hover:not(:disabled) {
+        background-color: lighten($eggplant, 10%);
+      }
+      &:disabled {
+        background-color: lighten($eggplant, 20%);
+      }
+    }
+  }
+}
