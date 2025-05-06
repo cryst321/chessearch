@@ -19,7 +19,8 @@
   gap: 2rem;
 
   @media (min-width: 992px) {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 5fr 3fr;
+    align-items: start;
   }
 }
 
@@ -33,14 +34,39 @@
 .board-controls-top {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
   flex-wrap: wrap;
+}
+.remove-mode-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background-color: $pearl;
+  color: $eggplant;
+  padding: 0.5rem 0.8rem;
+
+  svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: darken($pearl, 10%);
+  }
+
+  &.active {
+    background-color: $dim-gray;
+    color: white;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  }
 }
 .search-board-wrapper {
   display: flex;
   justify-content: center;
-
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 500px;
 }
 
 .fen-input-area {
@@ -48,11 +74,15 @@
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 500px;
+  justify-content: center;
 
   label {
     color: $dim-gray;
     font-weight: bold;
     margin-right: 0.5rem;
+    flex-shrink: 0;
   }
 
   .fen-input {
@@ -61,14 +91,20 @@
     border: 1px solid $battleship-gray;
     border-radius: 4px;
     font-family: $font-family;
-    min-width: 250px;
+    min-width: 200px;
+
+    &.input-error {
+      border-color: darken($eggplant, 10%);
+      background-color: lighten($lavender-blush, 5%);
+    }
   }
   .fen-error-message {
     color: darken($eggplant, 10%);
     font-size: 0.85rem;
     margin-left: 0.5rem;
     width: 100%;
-    text-align: right;
+    text-align: center;
+    margin-top: 0.3rem;
   }
 }
 
@@ -105,23 +141,28 @@
   border-radius: 8px;
   padding: 1.5rem;
   background-color: lighten($lavender-blush, 5%);
-  align-self: center;
+  align-self: start;
+  margin-top: 3rem;
   h3 {
     margin-top: 0;
     color: $eggplant;
     text-align: center;
     margin-bottom: 1.5rem;
   }
-
+  .search-action-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
   .param-item {
-    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 
     label {
       color: $dim-gray;
-      min-width: 80px;
+      flex-shrink: 0;
     }
 
     .param-input {
@@ -129,18 +170,84 @@
       border: 1px solid $battleship-gray;
       border-radius: 4px;
       font-family: $font-family;
-      width: 60px;
+      width: 50px;
     }
   }
 
   .search-button {
-    width: 100%;
-    margin-top: 1rem;
-    padding: 0.8rem;
-    font-size: 1.1rem;
+
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
     background-color: $eggplant;
+    color: $pearl;
     &:hover:not(:disabled) {
       background-color: lighten($eggplant, 10%);
+    }
+  }
+  .help-text-section {
+    margin-top: 3rem;
+
+    font-size: 0.85rem;
+    color: $dim-gray;
+
+    .help-title {
+      color: $eggplant;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.5rem;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: lighten($pearl, 10%);
+      }
+      &:focus {
+        outline: none;
+        border-color: $dim-gray;
+      }
+
+      .toggle-icon {
+        margin-left: 0.5rem;
+        transition: transform 0.3s ease;
+      }
+
+      &.expanded .toggle-icon {
+        transform: rotate(90deg);
+      }
+    }
+
+    .help-content {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out 0.1s, padding-top 0.4s ease-in-out, margin-bottom 0.4s ease-in-out;
+      padding-top: 0;
+      margin-bottom: 0;
+      border-top: none;
+
+      &.expanded {
+        opacity: 1;
+        max-height: 500px;
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+        border-top: 1px dashed $battleship-gray;
+      }
+
+      ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin: 0;
+      }
+
+      li {
+        margin-bottom: 0.4rem;
+        line-height: 1.4;
+      }
     }
   }
 }

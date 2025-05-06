@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
+import { FiTrash2, FiXCircle, FiChevronRight } from 'react-icons/fi';
 import './Search.scss';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -14,11 +15,26 @@ const Search = () => {
     const [fenError, setFenError] = useState('');
 
     const [isRemoveMode, setIsRemoveMode] = useState(false);
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
 
     useEffect(() => {
         setFenInputValue(currentFen);
     }, [currentFen]);
 
+    /* validate FEN before updating */
+    const trySetFen = (newFen) => {
+        try {
+            const tempGame = new Chess(newFen);
+            setGame(tempGame);
+            setCurrentFen(newFen);
+            setFenError('');
+            return true;
+        } catch (e) {
+            console.error("Invalid FEN generated:", newFen, e);
+            setFenError("Only valid positions allowed.");
+            return false;
+        }
+    };
     const onPieceDrop = useCallback((sourceSquare, targetSquare) => {
         setFenError('');
         const gameCopy = new Chess(currentFen);
@@ -27,26 +43,18 @@ const Search = () => {
             gameCopy.remove(sourceSquare);
             gameCopy.put(piece, targetSquare);
             const newFen = gameCopy.fen();
-            setCurrentFen(newFen);
-            setGame(gameCopy);
-            return true;
+            return trySetFen(newFen);
         }
         return false;
     }, [currentFen]);
 
     const handleResetBoard = () => {
-        setFenError('');
-        const newGame = new Chess(START_FEN);
-        setGame(newGame);
-        setCurrentFen(START_FEN);
+        trySetFen(START_FEN);
         setIsRemoveMode(false);
     };
 
     const handleClearBoard = () => {
-        setFenError('');
-        const newGame = new Chess(KINGS_ONLY_EMPTY_FEN);
-        setGame(newGame);
-        setCurrentFen(KINGS_ONLY_EMPTY_FEN);
+        trySetFen(KINGS_ONLY_EMPTY_FEN);
         setIsRemoveMode(false);
     };
 
@@ -57,28 +65,22 @@ const Search = () => {
     };
 
     const handleImportFen = () => {
-        setFenError('');
         const fenToLoad = fenInputValue.trim();
         if (!fenToLoad) {
             setFenError("Empty FEN string; can't load.");
             return;
         }
-        try {
-
-            const tempGame = new Chess(fenToLoad);
-
-            setCurrentFen(tempGame.fen());
-            setGame(tempGame);
+        if (trySetFen(fenToLoad)) {
             console.log("FEN loaded successfully");
             setIsRemoveMode(false);
-
-        } catch (e) {
-            console.error("Error loading FEN:", e);
-            setFenError('Invalid FEN string');
         }
     };
 
     const handleSearch = () => {
+        if (!trySetFen(currentFen)) {
+            alert("Can't perform search: invalid board position.");
+            return;
+        }
         console.log('Search initiated with FEN:', currentFen);
         console.log('Max results parameter:', maxResults);
         alert("Search functionality not implemented yet!");
@@ -91,7 +93,6 @@ const Search = () => {
     };
     const handleSquareClick = useCallback((square) => {
         if (isRemoveMode) {
-            setFenError('');
             const gameCopy = new Chess(currentFen);
             const piece = gameCopy.get(square);
 
@@ -99,15 +100,16 @@ const Search = () => {
                 console.log(`Removing piece ${piece.type} from ${square}`);
                 gameCopy.remove(square);
                 const newFen = gameCopy.fen();
-                setCurrentFen(newFen);
-                setGame(gameCopy);
+                trySetFen(newFen);
             } else {
                 console.log(`No piece to remove on ${square}`);
             }
         }
     }, [isRemoveMode, currentFen]);
 
-
+    const toggleHelpSection = () => {
+        setIsHelpOpen(!isHelpOpen);
+    };
     return (
         <div className="search-page-container">
             <h2>Setup Position for Search</h2>
@@ -119,12 +121,14 @@ const Search = () => {
                         <button
                             onClick={toggleRemoveMode}
                             className={`control-button remove-mode-button ${isRemoveMode ? 'active' : ''}`}
+                            title={isRemoveMode ? 'Disable Remove Mode' : 'Enable Remove Mode (Click piece to remove)'}
                         >
-                            {isRemoveMode ? 'Remove Mode: ON' : 'Remove Mode: OFF'}
+                            {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
+                            {isRemoveMode ? ' ON' : ' OFF'}
                         </button>
                     </div>
 
-                    <div className="search-board-wrapper">
+                    <div className={`search-board-wrapper ${isRemoveMode ? 'remove-active' : ''}`}>
                         <Chessboard
                             position={currentFen}
                             onPieceDrop={onPieceDrop}
@@ -138,7 +142,6 @@ const Search = () => {
                             customDarkSquareStyle={{ backgroundColor: 'rgb(111,143,114)' }}
                             customLightSquareStyle={{ backgroundColor: 'rgb(173,189,143)'}}
                         />
-                        {isRemoveMode && <div className="remove-mode-indicator">Remove Mode Active: Click piece to remove</div>}
                     </div>
 
                     <div className="fen-input-area">
@@ -146,33 +149,65 @@ const Search = () => {
                         <input
                             type="text"
                             id="fenInput"
-                            className="fen-input"
-                            value={fenInputValue}
+                            className={`fen-input ${fenError ? 'input-error' : ''}`}                            value={fenInputValue}
+                            alue={fenInputValue}
                             onChange={handleFenInputChange}
-                            placeholder="Enter FEN string here"
+                            placeholder="Enter FEN string here or setup board"
+                            aria-invalid={!!fenError}
+                            aria-describedby={fenError ? "fen-error-msg" : undefined}
                         />
                         <button onClick={handleImportFen} className="control-button import-button">Load FEN</button>
-                        {fenError && <span className="fen-error-message">{fenError}</span>}
-                    </div>
+                        {fenError && <span id="fen-error-msg" className="fen-error-message">{fenError}</span>}                    </div>
                 </div>
 
                 <div className="search-params-area">
                     <h3>Retrieval options</h3>
-                    <div className="param-item">
-                        <label htmlFor="maxResults">Number of results:</label>
-                        <input
-                            type="number"
-                            id="maxResults"
-                            className="param-input"
-                            value={maxResults}
-                            onChange={(e) => setMaxResults(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                            min="1"
-                        />
+                    <div className="search-action-group">
+                        <div className="param-item">
+                            <label htmlFor="maxResults">Results:</label>
+                            <input
+                                type="number"
+                                id="maxResults"
+                                className="param-input"
+                                value={maxResults}
+                                onChange={(e) => setMaxResults(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                min="1"
+                            />
+                        </div>
+                        <button onClick={handleSearch} className="search-button">
+                            Search!
+                        </button>
                     </div>
 
-                    <button onClick={handleSearch} className="search-button">
-                        Search!
-                    </button>
+
+
+                    <div className="help-text-section">
+                        <h4
+                            className={`help-title ${isHelpOpen ? 'expanded' : ''}`}
+                            onClick={toggleHelpSection}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleHelpSection();}}
+                            tabIndex={0}
+                            role="button"
+                            aria-expanded={isHelpOpen}
+                            aria-controls="help-content-list"
+                        >
+                            How to use:
+                            <FiChevronRight className="toggle-icon" />
+                        </h4>
+                        <div
+                            id="help-content-list"
+                            className={`help-content ${isHelpOpen ? 'expanded' : ''}`}
+                        >
+                            <ul>
+                                <li>Drag pieces on the board to set up desired position.</li>
+                                <li>Alternatively, paste a valid FEN string into the input box and click "Load FEN".</li>
+                                <li>Click "Reset Board" to return the starting position.</li>
+                                <li>Click "Clear Board" to remove all pieces (except kings).</li>
+                                <li>To remove pieces off the board, toggle "Remove Mode" ON and click on them. Toggle OFF to drag pieces again.</li>
+                                <li>Set the desired number of results and click "Search!" to retrieve similar positions.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
