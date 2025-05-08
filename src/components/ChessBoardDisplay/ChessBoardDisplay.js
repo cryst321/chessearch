@@ -3,7 +3,7 @@ import { Chessboard } from 'react-chessboard';
 import './ChessBoardDisplay.scss';
 import { FiCopy, FiCheck } from 'react-icons/fi';
 
-const ChessBoardDisplay = ({ positions }) => {
+const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
     const [currentFen, setCurrentFen] = useState(
         positions && positions.length > 0 ? positions[0]?.fen : 'start'
@@ -12,14 +12,20 @@ const ChessBoardDisplay = ({ positions }) => {
 
     useEffect(() => {
         if (positions && positions.length > 0) {
-            setCurrentMoveIndex(0);
-            setCurrentFen(positions[0]?.fen || 'start');
+            if (initialMoveIndex !== undefined && initialMoveIndex !== null &&
+                initialMoveIndex >= 0 && initialMoveIndex < positions.length) {
+                setCurrentMoveIndex(initialMoveIndex);
+                setCurrentFen(positions[initialMoveIndex]?.fen || 'start');
+            } else {
+                setCurrentMoveIndex(0);
+                setCurrentFen(positions[0]?.fen || 'start');
+            }
         } else {
             setCurrentMoveIndex(0);
             setCurrentFen('start');
         }
         setIsFenCopied(false);
-    }, [positions]);
+    }, [positions,initialMoveIndex]);
 
 
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ChessBoardDisplay from '../../components/ChessBoardDisplay/ChessBoardDisplay';
 import GameInfo from '../../components/GameInfo/GameInfo';
+
 import './GamePage.scss';
 
 const API_BASE_URL = 'http://localhost:8080/api/game';
@@ -31,6 +32,8 @@ const GamePage = () => {
     const [gameData, setGameData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const location = useLocation();
+    const initialMoveIndexFromSearch = location.state?.initialMoveIndex;
 
     useEffect(() => {
         const fetchGame = async () => {
@@ -109,7 +112,10 @@ const GamePage = () => {
             <div className="game-layout">
                 {/* Chessboard */}
                 <div className="chessboard-section">
-                    <ChessBoardDisplay positions={gameData.positions} />
+                    <ChessBoardDisplay
+                        positions={gameData.positions}
+                        initialMoveIndex={initialMoveIndexFromSearch}
+                    />
                 </div>
                 {/* Game info */}
                 <div className="game-info-section">

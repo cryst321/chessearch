@@ -12,6 +12,7 @@ import GamePage from "./pages/GamePage/GamePage";
 import { AuthProvider } from './context/AuthContext';
 import LoadGamesPage from "./pages/LoadGame";
 import AdminProtectedRoute from "./components/Auth/AdminProtectedRoute";
+import SearchResults from "./pages/SearchResults/SearchResults";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
                   <Route path="games" element={<Games />} />
                   <Route path="game/:gameId" element={<GamePage />} />
                   <Route path="analyze" element={<Analyze />} />
+                  <Route path="search-results" element={<SearchResults />} />
                   <Route
                       path="load-games"
                       element={

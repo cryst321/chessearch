@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import { FiTrash2, FiXCircle, FiChevronRight } from 'react-icons/fi';
+import { findSimilarPositions } from '../../services/searchService';
 import './Search.scss';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -16,6 +18,11 @@ const Search = () => {
 
     const [isRemoveMode, setIsRemoveMode] = useState(false);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState('');
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         setFenInputValue(currentFen);
@@ -76,14 +83,29 @@ const Search = () => {
         }
     };
 
-    const handleSearch = () => {
+    const handleSearch = async () => {
+        setSearchError('');
+        setFenError('');
         if (!trySetFen(currentFen)) {
-            alert("Can't perform search: invalid board position.");
             return;
         }
-        console.log('Search initiated with FEN:', currentFen);
-        console.log('Max results parameter:', maxResults);
-        alert("Search functionality not implemented yet!");
+        setIsSearching(true);
+        try {
+            const results = await findSimilarPositions(currentFen, maxResults);
+            console.log('Search results:', results);
+            navigate('/search-results', {
+                state: {
+                    results: results,
+                    queryFen: currentFen
+                }
+            });
+
+        } catch (error) {
+            console.error("Search failed:", error);
+            setSearchError(error.message || "Search failed. Please try again.");
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     const toggleRemoveMode = () => {
@@ -149,8 +171,8 @@ const Search = () => {
                         <input
                             type="text"
                             id="fenInput"
-                            className={`fen-input ${fenError ? 'input-error' : ''}`}                            value={fenInputValue}
-                            alue={fenInputValue}
+                            className={`fen-input ${fenError ? 'input-error' : ''}`}
+                            value={fenInputValue}
                             onChange={handleFenInputChange}
                             placeholder="Enter FEN string here or setup board"
                             aria-invalid={!!fenError}
@@ -172,13 +194,16 @@ const Search = () => {
                                 value={maxResults}
                                 onChange={(e) => setMaxResults(Math.max(1, parseInt(e.target.value, 10) || 1))}
                                 min="1"
+                                disabled={isSearching}
                             />
                         </div>
-                        <button onClick={handleSearch} className="search-button">
-                            Search!
+                        <button onClick={handleSearch}
+                                className="search-button"
+                                disabled={isSearching}>
+                            {isSearching ? 'Searching...' : 'Search!'}
                         </button>
                     </div>
-
+                    {searchError && <p className="search-error-message">{searchError}</p>}
 
 
                     <div className="help-text-section">
