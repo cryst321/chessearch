@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import { Chessboard } from 'react-chessboard';
 import './ChessBoardDisplay.scss';
-import { FiCopy, FiCheck } from 'react-icons/fi';
+import { FiCopy, FiCheck, FiChevronsLeft, FiChevronLeft, FiChevronRight, FiChevronsRight } from 'react-icons/fi';
 
 const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
@@ -10,45 +10,105 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
     );
     const [isFenCopied, setIsFenCopied] = useState(false);
 
+    const [isEditingMove, setIsEditingMove] = useState(false);
+    const [editMoveValue, setEditMoveValue] = useState('');
+    const moveInputRef = useRef(null);
+
     useEffect(() => {
-        if (positions && positions.length > 0) {
-            if (initialMoveIndex !== undefined && initialMoveIndex !== null &&
-                initialMoveIndex >= 0 && initialMoveIndex < positions.length) {
-                setCurrentMoveIndex(initialMoveIndex);
-                setCurrentFen(positions[initialMoveIndex]?.fen || 'start');
-            } else {
-                setCurrentMoveIndex(0);
-                setCurrentFen(positions[0]?.fen || 'start');
-            }
+        const totalMoves = Array.isArray(positions) ? positions.length : 0;
+        let startingIndex = 0;
+
+        if (initialMoveIndex !== undefined && initialMoveIndex !== null &&
+            initialMoveIndex >= 0 && initialMoveIndex < totalMoves) {
+            startingIndex = initialMoveIndex;
+        }
+
+        setCurrentMoveIndex(startingIndex);
+        if (positions && positions[startingIndex]) {
+            setCurrentFen(positions[startingIndex].fen || 'start');
         } else {
-            setCurrentMoveIndex(0);
             setCurrentFen('start');
         }
+
         setIsFenCopied(false);
-    }, [positions,initialMoveIndex]);
+        setIsEditingMove(false);
+    }, [positions, initialMoveIndex]);
+
+    const goToMove = useCallback((index) => {
+        const totalMoves = Array.isArray(positions) ? positions.length : 0;
+        const newIndex = Math.max(0, Math.min(totalMoves > 0 ? totalMoves - 1 : 0, index));
+
+        if (positions && positions[newIndex]) {
+            setCurrentFen(positions[newIndex].fen);
+            setCurrentMoveIndex(newIndex);
+            setIsFenCopied(false);
+            setIsEditingMove(false);
+        }
+    }, [positions]);
+
+    const handleGoToStart = useCallback(() => {
+        goToMove(0);
+    }, [goToMove]);
 
 
+    const handlePreviousMove = useCallback(() => {
+        goToMove(currentMoveIndex - 1);
+    }, [currentMoveIndex, goToMove]);
 
-    const handlePreviousMove = () => {
-        setCurrentMoveIndex((prevIndex) => {
-            const newIndex = Math.max(0, prevIndex - 1);
-            if (positions && positions[newIndex]) {
-                setCurrentFen(positions[newIndex].fen);
-            }
-            return newIndex;
-        });
+    const handleNextMove = useCallback(() => {
+        goToMove(currentMoveIndex + 1);
+    }, [currentMoveIndex, goToMove]);
+
+    const handleGoToEnd = useCallback(() => {
+        const totalMoves = Array.isArray(positions) ? positions.length : 0;
+        goToMove(totalMoves > 0 ? totalMoves - 1 : 0);
+    }, [positions, goToMove]);
+
+    const handleMoveCounterClick = () => {
+        const totalMoves = Array.isArray(positions) ? positions.length : 0;
+        if (totalMoves > 0) {
+            setEditMoveValue(String(currentMoveIndex + 1));
+            setIsEditingMove(true);
+        }
     };
 
-    const handleNextMove = () => {
-        setCurrentMoveIndex((prevIndex) => {
-            const newIndex = Math.min(positions ? positions.length - 1 : 0, prevIndex + 1);
-            if (positions && positions[newIndex]) {
-                setCurrentFen(positions[newIndex].fen);
-            }
-            return newIndex;
-        });
+    useEffect(() => {
+        if (isEditingMove && moveInputRef.current) {
+            moveInputRef.current.focus();
+            moveInputRef.current.select();
+        }
+    }, [isEditingMove]);
+
+    const handleMoveInputChange = (e) => {
+        setEditMoveValue(e.target.value);
     };
 
+    const handleMoveInputSubmit = () => {
+        const totalMoves = Array.isArray(positions) ? positions.length : 0;
+        const targetDisplayNumber = parseInt(editMoveValue, 10);
+        const targetIndex = targetDisplayNumber - 1;
+
+        if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < totalMoves) {
+            goToMove(targetIndex);
+        } else {
+            console.warn("Invalid move number entered:", editMoveValue);
+            setIsEditingMove(false);
+        }
+    };
+
+    const handleMoveInputKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleMoveInputSubmit();
+        } else if (e.key === 'Escape') {
+            setIsEditingMove(false);
+            setEditMoveValue('');
+        }
+    };
+
+    const handleMoveInputBlur = () => {
+        setIsEditingMove(false);
+        setEditMoveValue('');
+    };
     const handleCopyFen = () => {
         if (!currentFen || currentFen === 'start') {
             console.warn("Attempted to copy invalid FEN:", currentFen);
@@ -73,11 +133,11 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
     };
     useEffect(() => {
         const handleKeyDown = (event) => {
-            if (event.key === 'ArrowLeft') {
-                handlePreviousMove();
-            } else if (event.key === 'ArrowRight') {
-                handleNextMove();
-            }
+            if (isEditingMove) return;
+            if (event.key === 'ArrowLeft') handlePreviousMove();
+            else if (event.key === 'ArrowRight') handleNextMove();
+            else if (event.key === 'Home') { event.preventDefault(); handleGoToStart(); }
+            else if (event.key === 'End') { event.preventDefault(); handleGoToEnd(); }
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -85,8 +145,11 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handlePreviousMove, handleNextMove]);
+    }, [handlePreviousMove, handleNextMove, isEditingMove, handleGoToStart, handleGoToEnd]);
+
     const totalMoves = Array.isArray(positions) ? positions.length : 0;
+    const displayMoveNumber = totalMoves > 0 ? currentMoveIndex + 1 : 0;
+    const displayTotalMoves = totalMoves;
     const isFirstMove = currentMoveIndex === 0;
     const isLastMove = currentMoveIndex >= totalMoves - 1;
 
@@ -111,22 +174,73 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
 
             {/* navigation */}
             <div className="move-controls">
+
+                <button
+                    onClick={handleGoToStart}
+                    disabled={isFirstMove || totalMoves === 0}
+                    className="move-button icon-button"
+                    aria-label="Go to first move"
+                    title="Go to first move"
+                >
+                    <FiChevronsLeft />
+                </button>
+
                 <button
                     onClick={handlePreviousMove}
-                    disabled={isFirstMove}
-                    className="move-button"
+                    disabled={isFirstMove || totalMoves === 0}
+                    className="move-button icon-button"
+                    aria-label="Previous move"
+                    title="Previous move (Left Arrow)"
                 >
-                    Previous
+                    <FiChevronLeft />
                 </button>
-                <span className="move-counter">
-                    {totalMoves > 0 ? currentMoveIndex + 1 : 0} / {totalMoves}
-                </span>
+
+                <div className="move-counter-container">
+                    {isEditingMove ? (
+                        <input
+                            ref={moveInputRef}
+                            type="number"
+                            className="move-input"
+                            value={editMoveValue}
+                            onChange={handleMoveInputChange}
+                            onKeyDown={handleMoveInputKeyDown}
+                            onBlur={handleMoveInputBlur}
+                            min="1"
+                            max={displayTotalMoves > 0 ? displayTotalMoves : 1}
+                            step="1"
+                        />
+                    ) : (
+                        <span
+                            className="move-counter"
+                            onClick={handleMoveCounterClick}
+                            title="Click to enter move number (1-based index)"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key==='Enter' || e.key=== ' ') handleMoveCounterClick();}}
+                            role="button"
+                            aria-label={`Current move ${displayMoveNumber} of ${displayTotalMoves}. Click to edit.`}
+                        >
+                        {displayMoveNumber} / {displayTotalMoves}
+                        </span>
+                    )}
+                </div>
+
                 <button
                     onClick={handleNextMove}
-                    disabled={isLastMove}
-                    className="move-button"
+                    disabled={isLastMove || totalMoves === 0}
+                    className="move-button icon-button"
+                    aria-label="Next move"
+                    title="Next move (Right Arrow)"
                 >
-                    Next
+                    <FiChevronRight />
+                </button>
+                <button
+                    onClick={handleGoToEnd}
+                    disabled={isLastMove || totalMoves === 0}
+                    className="move-button icon-button"
+                    aria-label="Go to last move"
+                    title="Go to last move"
+                >
+                    <FiChevronsRight />
                 </button>
             </div>
 

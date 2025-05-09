@@ -126,3 +126,63 @@
     }
   }
 }
+.icon-button {
+  background: $eggplant;
+  border: 1px solid transparent;
+  color: $pearl;
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background-color: lighten($pearl, 10%);
+    color: darken($eggplant, 10%);
+  }
+  &:focus {
+    outline: 1px dashed $battleship-gray;
+    outline-offset: 2px;
+  }
+}.move-counter-container {
+   min-width: 80px;
+   text-align: center;
+ }
+
+.move-counter {
+  color: $dim-gray;
+  font-weight: bold;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent;
+
+  &:hover, &:focus {
+    background-color: lighten($pearl, 10%);
+    outline: none;
+    border-color: $battleship-gray;
+  }
+}
+
+.move-input {
+  width: 60px;
+  padding: 0.4rem;
+  font-size: 1rem;
+  text-align: center;
+  border: 1px solid $battleship-gray;
+  border-radius: 4px;
+  font-family: $font-family;
+  color: $eggplant;
+  background-color: #fff;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
+}

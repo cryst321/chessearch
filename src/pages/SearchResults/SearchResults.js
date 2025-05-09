@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import './SearchResults.scss';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 const SearchResults = () => {
     const location = useLocation();
-    const navigate = useNavigate();
     const { results, queryFen } = location.state || { results: [], queryFen: '' };
 
     const [showAll, setShowAll] = useState(false);
@@ -17,7 +16,7 @@ const SearchResults = () => {
             console.warn("No results passed to SearchResults page or results are empty.");
         }
         setIsQueryBoardVisible(false);
-    }, [results, navigate]);
+    }, [results]);
 
     if (!results || results.length === 0) {
         return (
@@ -73,7 +72,7 @@ const SearchResults = () => {
                     <div className="search-result-item best-match-item">
                         <Link
                             to={`/game/${bestResult.gameId}`}
-                            state={{ initialMoveIndex: bestResult.moveNumber }}
+                            state={{ initialMoveIndex: bestResult.moveNumber - 1}}
                             className="result-link"
                         >
                             <div className="result-board large-board">
@@ -88,7 +87,7 @@ const SearchResults = () => {
                             </div>
                             <div className="result-details">
                                 <p>Game ID: {bestResult.gameId}</p>
-                                <p>Move: {bestResult.moveNumber}</p>
+                                <p>Move: {bestResult.moveNumber }</p>
                                 <p className="fen-preview-text">{bestResult.positionFen}</p>
                                 <span className="view-game-prompt">Click to view full game</span>
                             </div>
@@ -109,7 +108,7 @@ const SearchResults = () => {
                                 <div key={`${result.gameId}-${result.moveNumber}-${result.positionFen}`} className="search-result-item">
                                     <Link
                                         to={`/game/${result.gameId}`}
-                                        state={{ initialMoveIndex: result.moveNumber }}
+                                        state={{ initialMoveIndex: result.moveNumber - 1}}
                                         className="result-link"
                                     >
                                         <div className="result-board small-board">
