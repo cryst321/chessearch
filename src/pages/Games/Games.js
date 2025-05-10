@@ -1,7 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { Link } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
+
 import './Games.scss';
+import { FiChevronsLeft, FiChevronLeft, FiChevronRight, FiChevronsRight } from 'react-icons/fi';
 
 
 const API_BASE_URL = 'http://localhost:8080/api/game';
@@ -17,7 +19,8 @@ const Games = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(0);
+
     const [isEditingPage, setIsEditingPage] = useState(false);
     const [editPageValue, setEditPageValue] = useState('');
     const pageInputRef = useRef(null);
@@ -34,20 +37,20 @@ const Games = () => {
                 if (!response.ok) {
                     throw new Error(`HTTP error: ${response.status}`);
                 }
-                const data = await response.json();
+                const paginatedData = await response.json();
 
-                if (!Array.isArray(data)) {
+                if (!paginatedData || !Array.isArray(paginatedData.previews)) {
                     throw new Error("Invalid data format received from server.");
                 }
 
-                setPreviews(data);
-                setHasMore(data.length === PAGE_SIZE);
+                setPreviews(paginatedData.previews);
+                setTotalPages(paginatedData.totalPages);
 
             } catch (err) {
                 console.error("Error fetching game previews:", err);
                 setError(err.message || 'Failed to load games. Please try again.');
                 setPreviews([]);
-                setHasMore(false);
+                setTotalPages(0);
             } finally {
                 setIsLoading(false);
             }
@@ -56,17 +59,35 @@ const Games = () => {
         fetchGamePreviews();
 
     }, [currentPage]);
+    const goToPage = (pageIndex) => {
+        const newPageIndex = Math.max(0, Math.min(totalPages>0 ? totalPages-1 : 0, pageIndex));
 
-    const goToNextPage = () => {
-        setCurrentPage(prevPage => prevPage + 1);
+        setCurrentPage(newPageIndex);
+        setIsEditingPage(false);
+    };
+    const goToFirstPage = () => {
+        goToPage(0);
     };
 
     const goToPrevPage = () => {
-        setCurrentPage(prevPage => Math.max(0, prevPage - 1));
+        goToPage(currentPage - 1);
+    };
+
+    const goToNextPage = () => {
+        if (currentPage < totalPages - 1) {
+            goToPage(currentPage + 1);
+        }
+    };
+
+    const goToLastPage = () => {
+        if (totalPages > 0) {
+            goToPage(totalPages - 1);
+        }
     };
 
     /* logic for inputing page number manually */
     const handlePageDisplayClick = () => {
+        if (isLoading || totalPages === 0) return;
         setEditPageValue(String(currentPage + 1));
         setIsEditingPage(true);
     };
@@ -88,22 +109,13 @@ const Games = () => {
     const handlePageInputSubmit = () => {
         const targetPageOneBased = parseInt(editPageValue, 10);
 
-        if (!isNaN(targetPageOneBased) && targetPageOneBased >= 1) {
+        if (!isNaN(targetPageOneBased) && targetPageOneBased >= 1 && targetPageOneBased <= totalPages) {
             const targetPageZeroBased = targetPageOneBased - 1;
-
-            if (targetPageZeroBased !== currentPage) {
-                if (targetPageZeroBased > currentPage && !hasMore) {
-                    console.warn("Attempted to navigate beyond the known last page.");
-                } else {
-                    setCurrentPage(targetPageZeroBased);
-                }
-
-            }
+            goToPage(targetPageZeroBased);
         } else {
             console.warn("Invalid page number entered:", editPageValue);
+            setIsEditingPage(false);
         }
-
-        setIsEditingPage(false);
     };
 
     const handlePageInputKeyDown = (e) => {
@@ -111,12 +123,16 @@ const Games = () => {
             handlePageInputSubmit();
         } else if (e.key === 'Escape') {
             setIsEditingPage(false);
+            setEditPageValue('');
         }
     };
 
     const handlePageInputBlur = () => {
         setIsEditingPage(false);
+        setEditPageValue('');
     };
+
+    const hasMorePages = currentPage < totalPages - 1;
 
     return (
         <div className="games-page-container">
@@ -125,8 +141,11 @@ const Games = () => {
             {isLoading && <div className="loading-indicator">Loading...</div>}
             {error && <div className="error-message">{error}</div>}
 
-            {!isLoading && !error && previews.length === 0 && (
-                <p>You've reached the end!</p>
+            {!isLoading && !error && previews.length === 0 && currentPage > 0 && (
+                <p>You've reached the end, or this page is empty.</p>
+            )}
+            {!isLoading && !error && previews.length === 0 && currentPage === 0 && (
+                <p>No games found.</p>
             )}
 
             <div className="game-previews-grid">
@@ -159,48 +178,73 @@ const Games = () => {
                 ))}
             </div>
 
-            <div className="pagination-controls">
-                <button
-                    onClick={goToPrevPage}
-                    disabled={currentPage === 0 || isLoading}
-                    aria-label="Previous Page"
-                >
-                    &larr;
-                </button>
-
-                {isEditingPage ? (
-                    <input
-                        ref={pageInputRef}
-                        type="number"
-                        className="page-number-input"
-                        value={editPageValue}
-                        onChange={handlePageInputChange}
-                        onKeyDown={handlePageInputKeyDown}
-                        onBlur={handlePageInputBlur}
-                        min="1"
-
-                    />
-                ) : (
-                    <span
-                        className="page-number-display"
-                        onClick={handlePageDisplayClick}
-                        title="Click to enter page number"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }}
+            { (totalPages > 0) &&
+                <div className="pagination-controls">
+                    <button
+                        onClick={goToFirstPage}
+                        disabled={currentPage === 0 || isLoading}
+                        className="pagination-button icon-button"
+                        aria-label="Go to first page"
+                        title="Go to first page"
                     >
-                        [ {currentPage + 1} ]
-                    </span>
-                )}
+                        <FiChevronsLeft />
+                    </button>
+                    <button
+                        onClick={goToPrevPage}
+                        disabled={currentPage === 0 || isLoading}
+                        className="pagination-button icon-button"
+                        aria-label="Previous Page"
+                        title="Previous Page"
+                    >
+                        <FiChevronLeft />
+                    </button>
 
-                <button
-                    onClick={goToNextPage}
-                    disabled={!hasMore || isLoading}
-                    aria-label="Next Page"
-                >
-                    &rarr;
-                </button>
-            </div>
+                    {isEditingPage ? (
+                        <input
+                            ref={pageInputRef}
+                            type="number"
+                            className="page-number-input"
+                            value={editPageValue}
+                            onChange={handlePageInputChange}
+                            onKeyDown={handlePageInputKeyDown}
+                            onBlur={handlePageInputBlur}
+                            min="1"
+                            max={totalPages > 0 ? totalPages : 1}
+                        />
+                    ) : (
+                        <span
+                            className="page-number-display"
+                            onClick={handlePageDisplayClick}
+                            title="Click to enter page number"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }}
+                            role="button"
+                            aria-label={`Page ${currentPage + 1}. Click to edit.`}
+                        >
+                            [ {currentPage + 1}  / {totalPages} ]
+                        </span>
+                    )}
 
+                    <button
+                        onClick={goToNextPage}
+                        disabled={!hasMorePages || isLoading}
+                        className="pagination-button icon-button"
+                        aria-label="Next Page"
+                        title="Next Page"
+                    >
+                        <FiChevronRight />
+                    </button>
+                    <button
+                        onClick={goToLastPage}
+                        disabled={currentPage >= totalPages - 1 || isLoading || totalPages === 0}
+                        className="pagination-button icon-button"
+                        aria-label="Go to last page"
+                        title="Go to last page"
+                    >
+                        <FiChevronsRight />
+                    </button>
+                </div>
+            }
         </div>
 
     );
