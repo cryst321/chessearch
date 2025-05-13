@@ -24,6 +24,7 @@ const Games = () => {
     const [isEditingPage, setIsEditingPage] = useState(false);
     const [editPageValue, setEditPageValue] = useState('');
     const pageInputRef = useRef(null);
+    const gamesGridRef = useRef(null);
 
     useEffect(() => {
         const fetchGamePreviews = async () => {
@@ -45,7 +46,9 @@ const Games = () => {
 
                 setPreviews(paginatedData.previews);
                 setTotalPages(paginatedData.totalPages);
-
+                if (gamesGridRef.current) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             } catch (err) {
                 console.error("Error fetching game previews:", err);
                 setError(err.message || 'Failed to load games. Please try again.');
@@ -137,16 +140,16 @@ const Games = () => {
     return (
         <div className="games-page-container">
             <h2>Browse Games</h2>
-
+            <div className="games-message-area">
             {isLoading && <div className="loading-indicator">Loading...</div>}
             {error && <div className="error-message">{error}</div>}
 
-            {!isLoading && !error && previews.length === 0 && currentPage > 0 && (
-                <p>You've reached the end, or this page is empty.</p>
-            )}
-            {!isLoading && !error && previews.length === 0 && currentPage === 0 && (
-                <p>No games found.</p>
-            )}
+                {!isLoading && !error && previews.length === 0 && (
+                    <p className="no-games-message">
+                        {currentPage>0 && totalPages>0 ? "You've reached the end." : "No games found."}
+                    </p>
+                )}
+            </div>
 
             <div className="game-previews-grid">
                 {previews.map((preview) => (

@@ -10,7 +10,7 @@ import Analyze from "./pages/Analyze";
 import Search from "./pages/Search/Search";
 import GamePage from "./pages/GamePage/GamePage";
 import { AuthProvider } from './context/AuthContext';
-import LoadGamesPage from "./pages/LoadGame";
+import LoadGamesPage from "./pages/LoadGamesPage/LoadGamesPage";
 import AdminProtectedRoute from "./components/Auth/AdminProtectedRoute";
 import SearchResults from "./pages/SearchResults/SearchResults";
 
