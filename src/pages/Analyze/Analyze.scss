@@ -19,7 +19,7 @@
   gap: 2rem;
 
   @media (min-width: 992px) {
-    grid-template-columns: 5fr 3fr;
+    grid-template-columns: 6fr 4fr;
     align-items: start;
   }
 }
@@ -82,11 +82,59 @@
 
   .analysis-options {
     margin-bottom: 1.5rem;
+
+    .tooltip-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+
+      &:hover .tooltip-content {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .tooltip-content {
+        visibility: hidden;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(51, 51, 51, 0.95);
+        color: white;
+        text-align: center;
+        padding: 0.5rem 0.8rem;
+        border-radius: 4px;
+        width: 220px;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        z-index: 100;
+        opacity: 0;
+        transition: opacity 0.3s;
+
+        &::after {
+          content: "";
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          margin-left: -5px;
+          border-width: 5px;
+          border-style: solid;
+          border-color: rgba(51, 51, 51, 0.95) transparent transparent transparent;
+        }
+      }
+    }
+
+    .info-icon {
+      font-size: 0.8rem;
+      margin-left: 0.2rem;
+      color: $battleship-gray;
+    }
+
+
     .param-inputs-wrapper {
       display: flex;
-      gap: 0.5rem;
       justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       width: 100%;
       min-width: min-content;
     }
@@ -119,10 +167,13 @@
       flex: 1;
       min-width: 0;
 
-      label { white-space: nowrap;
-        color: $dim-gray; font-size: 0.85em;}
+
+      label {display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        white-space: nowrap;cursor: help;}
       .param-input {
-        padding: 0.4rem; border: 1px solid $battleship-gray; border-radius: 4px;
+        padding: 0.4rem 0.15rem; border: 1px solid $battleship-gray; border-radius: 4px;
         font-family: $font-family; width: 50px; font-size: 0.9rem;
       }
     }
@@ -213,5 +264,19 @@
   background-color: $eggplant;
   &:hover:not(:disabled) {
     background-color: lighten($eggplant, 10%);
+  }
+}
+.api-attribution {
+  font-size: 0.75rem;
+  color: $battleship-gray;
+  border-top: 1px dashed $battleship-gray;
+  padding-top:1rem;
+  a {
+    color: $eggplant;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

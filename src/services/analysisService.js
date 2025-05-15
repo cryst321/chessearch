@@ -7,17 +7,19 @@ const CHESS_API_URL = "https://chess-api.com/v1";
  * @param {number} options.variants max number of variants (default: 1, max: 5)
  * @param {number} options.depth max depth (default: 12, max: 18)
  * @param {number} options.maxThinkingTime max thinking time (default: 50ms, max: 100)
+ * @param {string} options.searchmoves evaluate specific moves
  * @returns {Promise<object>}
  * @throws {Error}
  */
 export const getChessAnalysis = async (fen, options = {}) => {
     const requestData = {
         fen: fen,
-        variants: options.variants||1,
         depth: options.depth||12,
         maxThinkingTime: options.maxThinkingTime||50,
     };
-
+    if (options.searchmoves) {
+        requestData.searchmoves = options.searchmoves
+    }
     console.log("Sending to chess-api.com:", requestData);
 
     try {

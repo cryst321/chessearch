@@ -2,12 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import { getChessAnalysis } from '../../services/analysisService';
-import { FiTrash2, FiXCircle, FiPlayCircle } from 'react-icons/fi';
+import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo } from 'react-icons/fi';
 import './Analyze.scss';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
-
+const Tooltip = ({ children, content }) => {
+    return (
+        <div className="tooltip-container">
+            {children}
+            <div className="tooltip-content">{content}</div>
+        </div>
+    )
+}
 const Analyze = () => {
     const [game, setGame] = useState(new Chess(START_FEN));
     const [currentFen, setCurrentFen] = useState(START_FEN);
@@ -20,7 +27,7 @@ const Analyze = () => {
     const [analysisError, setAnalysisError] = useState('');
 
     const [analysisDepth, setAnalysisDepth] = useState(12);
-    const [analysisVariants, setAnalysisVariants] = useState(1);
+    const [maxThinkingTime, setMaxThinkingTime] = useState(50)
 
     useEffect(() => {
         setFenInputValue(currentFen);
@@ -94,7 +101,8 @@ const Analyze = () => {
         setAnalysisError('');
         setAnalysisResult(null);
         try {
-            const options = { depth: analysisDepth, variants: analysisVariants };
+            const options = {   depth: analysisDepth,
+                maxThinkingTime: maxThinkingTime };
             const data = await getChessAnalysis(currentFen, options);
             setAnalysisResult(data);
         } catch (error) {
@@ -162,7 +170,11 @@ const Analyze = () => {
                         <h3>Analysis options</h3>
                         <div className="param-inputs-wrapper">
                         <div className="param-item">
-                            <label htmlFor="analysisDepth">Depth ({'≤'}18):</label>
+                            <Tooltip content="Search depth affects analysis accuracy. Max: 18, default: 12. Higher values provide more accurate evaluations but take longer. Depth 12 ≈ 2350 FIDE elo, Depth 18 ≈ 2750 FIDE elo.">
+                                <label htmlFor="analysisDepth">
+                                    Depth: <FiInfo className="info-icon" />
+                                </label>
+                            </Tooltip>
                             <input
                                 type="number"
                                 id="analysisDepth"
@@ -173,17 +185,22 @@ const Analyze = () => {
                             />
                         </div>
                         <div className="param-item">
-                            <label htmlFor="analysisVariants">Variants ({'≤'}5):</label>
+                            <Tooltip content="Maximum thinking time in milliseconds. Max: 100, default: 50. Higher values may improve analysis quality but take longer to complete.">
+                                <label htmlFor="maxThinkingTime">
+                                    Time: <FiInfo className="info-icon" />
+                                </label>
+                            </Tooltip>
                             <input
                                 type="number"
-                                id="analysisVariants"
+                                id="maxThinkingTime"
                                 className="param-input"
-                                value={analysisVariants}
-                                onChange={(e) => setAnalysisVariants(Math.max(1, Math.min(5, parseInt(e.target.value,10)||1 )))}
-                                min="1" max="5"
+                                value={maxThinkingTime}
+                                onChange={(e) => setMaxThinkingTime(Math.max(10, Math.min(100, Number.parseInt(e.target.value, 10)||50)))}
+                                min="10" max="100"
                             />
                         </div>
                     </div>
+
                     </div>
 
                     <button onClick={handleAnalyzePosition} className="analyze-button" disabled={isAnalyzing}>
@@ -198,18 +215,24 @@ const Analyze = () => {
                             <h4>Analysis result:</h4>
                             {analysisResult.type === 'bestmove' && (
                                 <>
-                                    <p><strong>Best Move (SAN):</strong> {analysisResult.san || 'N/A'}</p>
+                                    <p><strong>Best move (SAN):</strong> {analysisResult.san || 'N/A'}</p>
                                     <p><strong>Evaluation:</strong> {analysisResult.eval !== undefined ? analysisResult.eval : 'N/A'}
                                         {analysisResult.mate ? ` (Mate in ${analysisResult.mate})` : ''}
                                     </p>
                                     <p><strong>Depth:</strong> {analysisResult.depth || 'N/A'}</p>
-                                    <p><strong>Win Chance:</strong> {analysisResult.winChance!==undefined ? `${analysisResult.winChance.toFixed(2)}%` : 'N/A'}</p>
+                                    <p><strong>Win chance:</strong> {analysisResult.winChance!==undefined ? `${analysisResult.winChance.toFixed(2)}%` : 'N/A'}</p>
                                     {analysisResult.continuationArr && analysisResult.continuationArr.length > 0 && (
-                                        <p><strong>Main Line:</strong> {analysisResult.continuationArr.join(' ')}</p>
+                                        <p><strong>Main line:</strong> {analysisResult.continuationArr.join(' ')}</p>
                                     )}
                                 </>
                             )}
                             {analysisResult.text && <p className="analysis-text-description">{analysisResult.text}</p>}
+                            <div className="api-attribution">
+                                Powered by{" "}
+                                <a href="https://chess-api.com" target="_blank" rel="noopener noreferrer">
+                                    chess-api.com
+                                </a>
+                            </div>
                         </div>
                     )}
                 </div>
