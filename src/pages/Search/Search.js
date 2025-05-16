@@ -6,6 +6,7 @@ import {FiTrash2, FiXCircle, FiChevronRight, FiRefreshCw, FiInfo} from 'react-ic
 import { findSimilarPositions } from '../../services/searchService';
 import './Search.scss';
 import Tooltip from "../../components/Tooltip/Tooltip";
+import { handlePromotion, isPromotion } from "../../services/chessUtils"
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
@@ -43,18 +44,41 @@ const Search = () => {
             return false;
         }
     };
-    const onPieceDrop = useCallback((sourceSquare, targetSquare) => {
-        setFenError('');
-        const gameCopy = new Chess(currentFen);
-        const piece = gameCopy.get(sourceSquare);
-        if (piece) {
-            gameCopy.remove(sourceSquare);
-            gameCopy.put(piece, targetSquare);
-            const newFen = gameCopy.fen();
-            return trySetFen(newFen);
-        }
-        return false;
-    }, [currentFen]);
+    const onPieceDrop = useCallback(
+        (sourceSquare, targetSquare, piece) => {
+            setFenError("")
+            const gameCopy = new Chess(currentFen)
+
+            // Get the piece object from the source square
+            const pieceObj = gameCopy.get(sourceSquare)
+
+            // Check if this is a promotion move
+            if (pieceObj && pieceObj.type === "p" && isPromotion(sourceSquare, targetSquare, pieceObj)) {
+                // For promotion, we'll handle it differently
+                // The piece parameter from react-chessboard will include the promotion piece
+                // Format is like "wP" for white pawn, and promotion choice is in the 4th character
+                const promotionPiece = piece.charAt(3) || "q" // Default to queen if not specified
+
+                // Use our utility function to handle the promotion
+                const newFen = handlePromotion(gameCopy, sourceSquare, targetSquare, piece, promotionPiece)
+
+                if (newFen) {
+                    return trySetFen(newFen)
+                }
+                return false
+            }
+
+            // Regular piece movement (non-promotion)
+            if (pieceObj) {
+                gameCopy.remove(sourceSquare)
+                gameCopy.put(pieceObj, targetSquare)
+                const newFen = gameCopy.fen()
+                return trySetFen(newFen)
+            }
+            return false
+        },
+        [currentFen],
+    )
 
     const handleResetBoard = () => {
         trySetFen(START_FEN);
