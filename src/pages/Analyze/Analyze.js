@@ -2,8 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import { getChessAnalysis } from '../../services/analysisService';
-import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo } from 'react-icons/fi';
+import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget } from 'react-icons/fi';
 import './Analyze.scss';
+
+const BEST_MOVE_COLOR = "rgba(243,112,41,0.92)"
+const CONTINUATION_COLOR = "rgba(111,58,175,0.82)"
+
+const SOURCE_SQUARE_COLOR = "rgba(255, 170, 0, 0.4)"
+const TARGET_SQUARE_COLOR = "rgba(255, 170, 0, 0.6)"
+
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
@@ -12,6 +19,37 @@ const Tooltip = ({ children, content }) => {
         <div className="tooltip-container">
             {children}
             <div className="tooltip-content">{content}</div>
+        </div>
+    )
+}
+const EvaluationBar = ({ evaluation, mate }) => {
+    let percentage = 50
+
+    if (mate) {
+        percentage = mate > 0 ? 95 : 5
+    } else if (evaluation !== undefined) {
+        percentage = 50 + 50 * (2 / (1 + Math.exp(-0.004 * evaluation * 100)) - 1)
+
+        percentage = Math.min(Math.max(percentage, 5), 95)
+    }
+
+    return (
+        <div className="evaluation-bar-container">
+            <div className="evaluation-bar">
+                <div className="black-eval" style={{ height: `${100 - percentage}%` }}></div>
+            </div>
+            <div className="evaluation-text">
+                {mate ? (
+                    <span className={mate > 0 ? "white-mate" : "black-mate"}>M{Math.abs(mate)}</span>
+                ) : (
+                    evaluation !== undefined && (
+                        <span className={evaluation > 0 ? "white-advantage" : evaluation < 0 ? "black-advantage" : ""}>
+              {evaluation > 0 ? "+" : ""}
+                            {evaluation.toFixed(1)}
+            </span>
+                    )
+                )}
+            </div>
         </div>
     )
 }
@@ -28,6 +66,10 @@ const Analyze = () => {
 
     const [analysisDepth, setAnalysisDepth] = useState(12);
     const [maxThinkingTime, setMaxThinkingTime] = useState(50)
+
+    const [showArrows, setShowArrows] = useState(true)
+    const [showThreats, setShowThreats] = useState(false)
+    const [continuationDepth, setContinuationDepth] = useState(3)
 
     useEffect(() => {
         setFenInputValue(currentFen);
@@ -79,6 +121,8 @@ const Analyze = () => {
     };
 
     const toggleRemoveMode = () => setIsRemoveMode(!isRemoveMode);
+    const toggleShowArrows = () => setShowArrows(!showArrows)
+    const toggleShowThreats = () => setShowThreats(!showThreats)
 
     const handleSquareClick = useCallback((square) => {
         if (isRemoveMode) {
@@ -112,15 +156,95 @@ const Analyze = () => {
             setIsAnalyzing(false);
         }
     };
+    const getCustomArrows = () => {
+        if (!showArrows || !analysisResult || !analysisResult.from || !analysisResult.to) {
+            return []
+        }
+
+        const arrows=[]
+
+        arrows.push([analysisResult.from, analysisResult.to, BEST_MOVE_COLOR])
+
+        if (analysisResult.continuationArr && analysisResult.continuationArr.length > 0) {
+            const startIndex = analysisResult.continuationArr[0] === `${analysisResult.from}${analysisResult.to}` ? 1 : 0
+
+            for (
+                let i = startIndex;
+                i < Math.min(startIndex + continuationDepth * 2, analysisResult.continuationArr.length);
+                i++
+            ) {
+                const move = analysisResult.continuationArr[i]
+                if (move && move.length >= 4) {
+                    const from = move.substring(0, 2)
+                    const to = move.substring(2, 4)
+                    arrows.push([from, to, CONTINUATION_COLOR])
+                }
+            }
+        }
+
+        return arrows
+    }
+
+    const getCustomSquareStyles = () => {
+        const styles = {}
+
+        if (!analysisResult || !analysisResult.from || !analysisResult.to) {
+            return styles
+        }
+
+        if (showArrows) {
+            styles[analysisResult.from] = { backgroundColor: SOURCE_SQUARE_COLOR }
+            styles[analysisResult.to] = { backgroundColor: TARGET_SQUARE_COLOR }
+        }
+
+        if (showThreats && game) {
+            try {
+                const fen = game.fen()
+                const gameCopy = new Chess(fen)
+                const turn = gameCopy.turn()
+                const opponentColor = turn === "w" ? "b" : "w"
+                const opponentSquares = []
+                const board = gameCopy.board()
+
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        const piece = board[i][j]
+                        if (piece && piece.color === opponentColor) {
+                            const file = "abcdefgh"[j]
+                            const rank = 8 - i
+                            opponentSquares.push(`${file}${rank}`)
+                        }
+                    }
+                }
+
+                for (const square of opponentSquares) {
+                    const moves = gameCopy.moves({ verbose: true })
+
+                    const isTargeted = moves.some((move) => move.to === square && move.captured)
+
+                    if (isTargeted) {
+                        styles[square] = {
+                            ...styles[square],
+                            boxShadow: "inset 0 0 0 4px rgba(111,58,175, 0.6)",
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error analyzing threats:", e)
+            }
+        }
+
+        return styles
+    }
 
     return (
         <div className="analyze-page-container">
-            <h2>Analyze Chess Position</h2>
+            <h2>Analyze with Stockfish 17</h2>
 
             <div className="analyze-layout">
                 <div className="board-setup-area-analyze">
                     <div className="board-controls-top">
-                        <button onClick={handleResetBoard} className="control-button">Reset Board</button>
+                        <button onClick={handleResetBoard} className="control-button">Reset</button>
                         <button onClick={handleClearBoard} className="control-button">Clear Board</button>
                         <button
                             onClick={toggleRemoveMode}
@@ -130,7 +254,37 @@ const Analyze = () => {
                             {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
                             {isRemoveMode ? ' ON' : ' OFF'}
                         </button>
+                        <div className="visualization-controls">
+
+                                    <button
+                                        onClick={toggleShowArrows}
+                                        className={`icon-button ${showArrows && analysisResult ? "active" : ""}`}
+                                        title={showArrows ? "Hide move arrows" : "Show move arrows"}
+                                        disabled={!analysisResult}
+                                    >
+                                        {showArrows ? <FiEyeOff /> : <FiEye />}
+                                    </button>
+                                    <button
+                                        onClick={toggleShowThreats}
+                                        className={`icon-button ${showThreats && analysisResult ? "active" : ""}`}
+                                        title={showThreats ? "Hide threatened pieces" : "Show threatened pieces"}
+                                        disabled={!analysisResult}
+                                    >
+                                        <FiTarget />
+                                    </button>
+
+                        </div>
                     </div>
+
+
+                    <div className="board-container">
+                        <div className="evaluation-bar-wrapper">
+                            {analysisResult && analysisResult.eval !== undefined ? (
+                                <EvaluationBar evaluation={analysisResult.eval} mate={analysisResult.mate} />
+                            ) : (
+                                <div className="evaluation-bar-placeholder"></div>
+                            )}
+                        </div>
 
                     <div className={`search-board-wrapper ${isRemoveMode ? 'remove-active' : ''}`}>
                         <Chessboard
@@ -145,7 +299,9 @@ const Analyze = () => {
                             }}
                             customDarkSquareStyle={{ backgroundColor: 'rgb(111,143,114)' }}
                             customLightSquareStyle={{ backgroundColor: 'rgb(173,189,143)'}}
-                        />
+                            customArrows={getCustomArrows()}
+                            customSquareStyles={getCustomSquareStyles()}
+                        /></div>
                     </div>
 
                     <div className="fen-input-area">
@@ -227,6 +383,24 @@ const Analyze = () => {
                                 </>
                             )}
                             {analysisResult.text && <p className="analysis-text-description">{analysisResult.text}</p>}
+                            {analysisResult && (
+                                <div className="visualization-legend">
+                                    <div className="legend-item">
+                                        <span className="arrow-sample best-move"></span>
+                                        <span>Best move</span>
+                                    </div>
+                                    <div className="legend-item">
+                                        <span className="arrow-sample continuation"></span>
+                                        <span>Continuation</span>
+                                    </div>
+                                    {showThreats && (
+                                        <div className="legend-item">
+                                            <span className="square-sample threat"></span>
+                                            <span>Threatened</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <div className="api-attribution">
                                 Powered by{" "}
                                 <a href="https://chess-api.com" target="_blank" rel="noopener noreferrer">
