@@ -437,15 +437,3 @@
      }
    }
  }
-.tooltip-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-
-  &:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
-  }
-
-
-}

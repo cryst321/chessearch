@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
-import { FiTrash2, FiXCircle, FiChevronRight } from 'react-icons/fi';
+import {FiTrash2, FiXCircle, FiChevronRight, FiRefreshCw, FiInfo} from 'react-icons/fi';
 import { findSimilarPositions } from '../../services/searchService';
 import './Search.scss';
+import Tooltip from "../../components/Tooltip/Tooltip";
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
@@ -65,7 +66,31 @@ const Search = () => {
         setIsRemoveMode(false);
     };
 
+    const handleSwitchSides = () => {
+        try {
+            const fenParts = currentFen.split(" ")
 
+            if (fenParts.length < 2) {
+                setFenError("Invalid FEN format.")
+                return
+            }
+            fenParts[1] = fenParts[1] === "w"?"b":"w"
+            const newFen = fenParts.join(" ")
+
+            trySetFen(newFen)
+        } catch (error) {
+            console.error("Error switching sides:", error)
+            setFenError("Could not switch sides.")
+        }
+    }
+
+    const getSideToMove = () => {
+        const fenParts = currentFen.split(" ")
+        if (fenParts.length >= 2) {
+            return fenParts[1]
+        }
+        return "w"
+    }
     const handleFenInputChange = (event) => {
         setFenInputValue(event.target.value);
         setFenError('');
@@ -140,14 +165,25 @@ const Search = () => {
                     <div className="board-controls-top">
                         <button onClick={handleResetBoard} className="control-button">Reset Board</button>
                         <button onClick={handleClearBoard} className="control-button">Clear Board</button>
-                        <button
-                            onClick={toggleRemoveMode}
-                            className={`control-button remove-mode-button ${isRemoveMode ? 'active' : ''}`}
-                            title={isRemoveMode ? 'Disable Remove Mode' : 'Enable Remove Mode (Click piece to remove)'}
-                        >
-                            {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
-                            {isRemoveMode ? ' ON' : ' OFF'}
-                        </button>
+                        <Tooltip content={isRemoveMode ? "Disable remove mode" : "Enable remove mode (click piece to remove)"}>
+                            <button
+                                onClick={toggleRemoveMode}
+                                className={`control-button remove-mode-button ${isRemoveMode ? "active" : ""}`}
+                                aria-label={isRemoveMode ? "Disable remove mode" : "Enable remove mode"}
+                            >
+                                {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
+                                {isRemoveMode ? " ON" : " OFF"}
+                            </button>
+                        </Tooltip>
+                        <Tooltip content={`${getSideToMove() === "w" ? "White" : "Black"} to move. Click to switch sides`}>
+                            <button
+                                onClick={handleSwitchSides}
+                                className={`side-switch-button ${getSideToMove() === "w" ? "white-to-move" : "black-to-move"}`}
+                                aria-label="Switch side to move"
+                            >
+                                <FiRefreshCw />
+                            </button>
+                        </Tooltip>
                     </div>
 
                     <div className={`search-board-wrapper ${isRemoveMode ? 'remove-active' : ''}`}>
@@ -186,7 +222,11 @@ const Search = () => {
                     <h3>Retrieval options</h3>
                     <div className="search-action-group">
                         <div className="param-item">
-                            <label htmlFor="maxResults">Results:</label>
+                            <Tooltip content="Maximum number of results that you wish to receive. Searching algorithm may return lesser than that.">
+                                <label htmlFor="maxResults">
+                                    Results: <FiInfo className="info-icon" />
+                                </label>
+                            </Tooltip>
                             <input
                                 type="number"
                                 id="maxResults"

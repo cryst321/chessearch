@@ -27,3 +27,15 @@
     border-color: rgba(51, 51, 51, 0.95) transparent transparent transparent;
   }
 }
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
+
+
+}
