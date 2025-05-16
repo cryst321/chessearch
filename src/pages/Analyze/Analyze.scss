@@ -29,6 +29,12 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  .board-controls-container {
+    width: 100%;
+    max-width: 500px;
+    padding-left: 30px;
+    box-sizing: border-box;
+  }
 
   .board-controls-top {
     display: flex;
@@ -78,8 +84,49 @@
     }
 
 
-}
-  .remove-mode-button, .arrows-button {
+    .side-switch-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      padding: 0;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      svg {
+        width: 1.1rem;
+        height: 1.1rem;
+        color: rgba(0, 0, 0, 0.7);
+      }
+
+      &.white-to-move {
+        background-color: #E0D8DE;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background-color: #e0e0e0;
+        }
+      }
+
+      &.black-to-move {
+        background-color: #333333;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+
+        svg {
+          color: #E0D8DE;
+        }
+
+        &:hover {
+          background-color: #222222;
+        }
+      }
+    }
+  }
+
+  .remove-mode-button {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -163,13 +210,18 @@
     width: 100%;
     max-width: 480px;
   }
+  .fen-input-container {
+    width: 100%;
+    max-width: 500px;
+    padding-left: 30px;
+    box-sizing: border-box;
+  }
   .fen-input-area {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
     width: 100%;
-    max-width: 480px;
     justify-content: center;
     label { color: $dim-gray; font-weight: bold; margin-right: 0.5rem; flex-shrink: 0; }
     .fen-input {
@@ -190,46 +242,7 @@
   .analysis-options {
     margin-bottom: 1.5rem;
 
-    .tooltip-container {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
 
-      &:hover .tooltip-content {
-        visibility: visible;
-        opacity: 1;
-      }
-
-      .tooltip-content {
-        visibility: hidden;
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: rgba(51, 51, 51, 0.95);
-        color: #E0D8DE;
-        text-align: center;
-        padding: 0.5rem 0.8rem;
-        border-radius: 4px;
-        width: 220px;
-        font-size: 0.8rem;
-        line-height: 1.4;
-        z-index: 100;
-        opacity: 0;
-        transition: opacity 0.3s;
-
-        &::after {
-          content: "";
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          margin-left: -5px;
-          border-width: 5px;
-          border-style: solid;
-          border-color: rgba(51, 51, 51, 0.95) transparent transparent transparent;
-        }
-      }
-    }
 
     .info-icon {
       font-size: 0.8rem;
@@ -424,3 +437,15 @@
      }
    }
  }
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
+
+
+}

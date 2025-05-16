@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import { getChessAnalysis } from '../../services/analysisService';
-import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget } from 'react-icons/fi';
+import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget, FiRefreshCw } from 'react-icons/fi';
 import './Analyze.scss';
+import Tooltip from "../../components/Tooltip/Tooltip"
 
 const BEST_MOVE_COLOR = "rgba(243,112,41,0.92)"
 const CONTINUATION_COLOR = "rgba(111,58,175,0.82)"
@@ -14,14 +15,7 @@ const TARGET_SQUARE_COLOR = "rgba(255, 170, 0, 0.6)"
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
-const Tooltip = ({ children, content }) => {
-    return (
-        <div className="tooltip-container">
-            {children}
-            <div className="tooltip-content">{content}</div>
-        </div>
-    )
-}
+
 const EvaluationBar = ({ evaluation, mate }) => {
     let percentage = 50
 
@@ -69,7 +63,7 @@ const Analyze = () => {
 
     const [showArrows, setShowArrows] = useState(true)
     const [showThreats, setShowThreats] = useState(false)
-    const [continuationDepth, setContinuationDepth] = useState(3)
+    const [continuationDepth, setContinuationDepth] = useState(2)
 
     useEffect(() => {
         setFenInputValue(currentFen);
@@ -80,6 +74,7 @@ const Analyze = () => {
             const tempGame = new Chess(newFen);
             setGame(tempGame);
             setCurrentFen(newFen);
+            setFenInputValue(newFen)
             setFenError('');
             setAnalysisResult(null);
             setAnalysisError('');
@@ -123,7 +118,22 @@ const Analyze = () => {
     const toggleRemoveMode = () => setIsRemoveMode(!isRemoveMode);
     const toggleShowArrows = () => setShowArrows(!showArrows)
     const toggleShowThreats = () => setShowThreats(!showThreats)
+    const handleSwitchSides = () => {
+        try {
+            const fenParts = currentFen.split(" ")
+            if (fenParts.length < 2) {
+                setFenError("Invalid FEN format.")
+                return
+            }
+            fenParts[1] = fenParts[1] === "w"?"b":"w"
 
+            const newFen = fenParts.join(" ")
+            trySetFen(newFen)
+        } catch (error) {
+            console.error("Error switching sides:", error)
+            setFenError("Could not switch sides.")
+        }
+    }
     const handleSquareClick = useCallback((square) => {
         if (isRemoveMode) {
             const gameCopy = new Chess(currentFen);
@@ -236,44 +246,67 @@ const Analyze = () => {
 
         return styles
     }
-
+    const getSideToMove = () => {
+        const fenParts = currentFen.split(" ")
+        if (fenParts.length >= 2) {
+            return fenParts[1]
+        }
+        return "w"
+    }
     return (
         <div className="analyze-page-container">
             <h2>Analyze with Stockfish 17</h2>
 
             <div className="analyze-layout">
                 <div className="board-setup-area-analyze">
+                    <div className="board-controls-container">
                     <div className="board-controls-top">
                         <button onClick={handleResetBoard} className="control-button">Reset</button>
                         <button onClick={handleClearBoard} className="control-button">Clear Board</button>
-                        <button
-                            onClick={toggleRemoveMode}
-                            className={`control-button remove-mode-button ${isRemoveMode ? 'active' : ''}`}
-                            title={isRemoveMode ? 'Disable Remove Mode' : 'Enable Remove Mode (Click piece to remove)'}
-                        >
-                            {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
-                            {isRemoveMode ? ' ON' : ' OFF'}
-                        </button>
+                        <Tooltip content={isRemoveMode ? "Disable remove mode" : "Enable remove mode (click piece to remove)"}>
+                            <button
+                                onClick={toggleRemoveMode}
+                                className={`control-button remove-mode-button ${isRemoveMode ? "active" : ""}`}
+                                aria-label={isRemoveMode ? "Disable remove mode" : "Enable remove mode"}
+                            >
+                                {isRemoveMode ? <FiXCircle /> : <FiTrash2 />}
+                                {isRemoveMode ? " ON" : " OFF"}
+                            </button>
+                        </Tooltip>
+                        <Tooltip content={`${getSideToMove() === "w" ? "White" : "Black"} to move. Click to switch sides`}>
+                            <button
+                                onClick={handleSwitchSides}
+                                className={`side-switch-button ${getSideToMove() === "w" ? "white-to-move" : "black-to-move"}`}
+                                aria-label="Switch side to move"
+                            >
+                                <FiRefreshCw />
+                            </button>
+                        </Tooltip>
                         <div className="visualization-controls">
 
-                                    <button
-                                        onClick={toggleShowArrows}
-                                        className={`icon-button ${showArrows && analysisResult ? "active" : ""}`}
-                                        title={showArrows ? "Hide move arrows" : "Show move arrows"}
-                                        disabled={!analysisResult}
-                                    >
-                                        {showArrows ? <FiEyeOff /> : <FiEye />}
-                                    </button>
-                                    <button
-                                        onClick={toggleShowThreats}
-                                        className={`icon-button ${showThreats && analysisResult ? "active" : ""}`}
-                                        title={showThreats ? "Hide threatened pieces" : "Show threatened pieces"}
-                                        disabled={!analysisResult}
-                                    >
-                                        <FiTarget />
-                                    </button>
+                            <Tooltip content={showArrows ? "Hide move arrows" : "Show move arrows"}>
+                                <button
+                                    onClick={toggleShowArrows}
+                                    className={`icon-button ${showArrows && analysisResult ? "active" : ""}`}
+                                    aria-label={showArrows ? "Hide move arrows" : "Show move arrows"}
+                                    disabled={!analysisResult}
+                                >
+                                    {showArrows ? <FiEyeOff /> : <FiEye />}
+                                </button>
+                            </Tooltip>
+                            <Tooltip content={showThreats ? "Hide threatened pieces" : "Show threatened pieces"}>
+                                <button
+                                    onClick={toggleShowThreats}
+                                    className={`icon-button ${showThreats && analysisResult ? "active" : ""}`}
+                                    aria-label={showThreats ? "Hide threatened pieces" : "Show threatened pieces"}
+                                    disabled={!analysisResult}
+                                >
+                                    <FiTarget />
+                                </button>
+                            </Tooltip>
 
                         </div>
+                    </div>
                     </div>
 
 
@@ -303,7 +336,7 @@ const Analyze = () => {
                             customSquareStyles={getCustomSquareStyles()}
                         /></div>
                     </div>
-
+                    <div className="fen-input-container">
                     <div className="fen-input-area">
                         <label htmlFor="fenInput">FEN String:</label>
                         <input
@@ -318,7 +351,7 @@ const Analyze = () => {
                         />
                         <button onClick={handleImportFen} className="control-button import-button">Load FEN</button>
                         {fenError && <span id="fen-error-msg" className="fen-error-message">{fenError}</span>}
-                    </div></div>
+                    </div></div></div>
 
                 <div className="analysis-controls">
                     <div className="analysis-options">
