@@ -1,9 +1,11 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
+import { useNavigate } from "react-router-dom"
 import { Chessboard } from 'react-chessboard';
 import './ChessBoardDisplay.scss';
-import { FiCopy, FiCheck, FiChevronsLeft, FiChevronLeft, FiChevronRight, FiChevronsRight } from 'react-icons/fi';
+import { FiCopy, FiCheck, FiChevronsLeft, FiChevronLeft, FiChevronRight, FiChevronsRight, FiSearch } from 'react-icons/fi';
 
 const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
+    const navigate = useNavigate()
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
     const [currentFen, setCurrentFen] = useState(
         positions && positions.length > 0 ? positions[0]?.fen : 'start'
@@ -131,6 +133,14 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
             console.warn('Clipboard API not available.');
         }
     };
+
+    const handleAnalyzePosition = () => {
+        if (!currentFen || currentFen === "start") {
+            console.warn("Attempted to analyze invalid FEN:", currentFen)
+            return
+        }
+        navigate("/analyze", { state: { initialFen: currentFen } })
+    }
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (isEditingMove) return;
@@ -170,6 +180,7 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
                     customDarkSquareStyle={{ backgroundColor: 'rgb(111,143,114)' }}
                     customLightSquareStyle={{ backgroundColor: 'rgb(173,189,143)' }}
                 />
+
             </div>
 
             {/* navigation */}
@@ -247,18 +258,30 @@ const ChessBoardDisplay = ({ positions, initialMoveIndex }) => {
             {/*<p className="fen-display">{currentFen}</p>*/}
             <div className="fen-container">
                 <p className="fen-display" title={currentFen}>{currentFen}</p>
+                <div className="fen-actions">
                 {currentFen && currentFen !== 'start' && (
+                    <>
                     <button
                         onClick={handleCopyFen}
-                        className={`copy-fen-button ${isFenCopied ? 'copied' : ''}`}
+                        className={`fen-action-button copy-fen-button ${isFenCopied ? "copied" : ""}`}
                         aria-label={isFenCopied ? 'FEN Copied!' : 'Copy FEN to clipboard'}
                         title={isFenCopied ? 'Copied!' : 'Copy FEN'}
                         type="button"
                     >
                         {isFenCopied ? <FiCheck /> : <FiCopy />}
                     </button>
+                     <button
+                         onClick={handleAnalyzePosition}
+                         className="fen-action-button analyze-button"
+                         aria-label="Analyze this position"
+                         title="Analyze this position"
+                         type="button"
+                        >
+                            <FiSearch />
+                        </button>
+                    </>
                 )}
-
+                </div>
             </div>
 
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
+import { useLocation } from "react-router-dom"
 import { Chess } from 'chess.js';
 import { getChessAnalysis } from '../../services/analysisService';
 import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget, FiRefreshCw } from 'react-icons/fi';
@@ -49,6 +50,8 @@ const EvaluationBar = ({ evaluation, mate }) => {
     )
 }
 const Analyze = () => {
+    const location = useLocation()
+    const initialFen = location.state?.initialFen || START_FEN /**if opened from GamePage**/
     const [game, setGame] = useState(new Chess(START_FEN));
     const [currentFen, setCurrentFen] = useState(START_FEN);
     const [fenInputValue, setFenInputValue] = useState(START_FEN);
@@ -66,6 +69,21 @@ const Analyze = () => {
     const [showThreats, setShowThreats] = useState(false)
     const [continuationDepth, setContinuationDepth] = useState(2)
 
+    useEffect(() => {
+        if (initialFen && initialFen !== START_FEN) {
+            try {
+                const tempGame = new Chess(initialFen)
+                setGame(tempGame)
+                setCurrentFen(initialFen)
+                setFenInputValue(initialFen)
+            } catch (e) {
+                console.error("Invalid initial FEN:", initialFen, e)
+                setGame(new Chess(START_FEN))
+                setCurrentFen(START_FEN)
+                setFenInputValue(START_FEN)
+            }
+        }
+    }, [initialFen])
     useEffect(() => {
         setFenInputValue(currentFen);
     }, [currentFen]);
