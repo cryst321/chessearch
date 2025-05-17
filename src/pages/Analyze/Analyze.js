@@ -5,7 +5,7 @@ import { getChessAnalysis } from '../../services/analysisService';
 import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget, FiRefreshCw } from 'react-icons/fi';
 import './Analyze.scss';
 import Tooltip from "../../components/Tooltip/Tooltip"
-import { handlePromotion } from "../../services/chessUtils"
+import { handlePieceDrop, handleSquareClick, trySetFen, switchSides, getSideToMove } from "../../services/chessUtils"
 
 const BEST_MOVE_COLOR = "rgba(243,112,41,0.92)"
 const CONTINUATION_COLOR = "rgba(111,58,175,0.82)"
@@ -70,37 +70,38 @@ const Analyze = () => {
         setFenInputValue(currentFen);
     }, [currentFen]);
 
-    const trySetFen = (newFen) => {
-        try {
-            const tempGame = new Chess(newFen);
-            setGame(tempGame);
-            setCurrentFen(newFen);
-            setFenInputValue(newFen)
-            setFenError('');
-            setAnalysisResult(null);
-            setAnalysisError('');
-            return true;
-        } catch (e) {
-            console.error("Invalid FEN:", newFen, e);
-            setFenError("Only valid positions allowed.");
-            return false;
-        }
-    };
+    const trySetFenWrapper = useCallback(
+        (newFen) => {
+            return trySetFen(
+                newFen,
+                setGame,
+                setCurrentFen,
+                setFenInputValue,
+                setFenError,
+                setAnalysisResult,
+                setAnalysisError,
+            )
+        },
+        [setGame, setCurrentFen, setFenInputValue, setFenError, setAnalysisResult, setAnalysisError],
+    )
+    const onPieceDrop = useCallback(
+        (sourceSquare, targetSquare, piece) => {
+            setFenError("")
+            return handlePieceDrop(sourceSquare, targetSquare, piece, currentFen, trySetFenWrapper)
+        },
+        [currentFen, trySetFenWrapper],
+    )
 
-    const onPieceDrop = useCallback((sourceSquare, targetSquare) => {
-        const gameCopy = new Chess(currentFen);
-        const piece = gameCopy.get(sourceSquare);
-        if (piece) {
-            gameCopy.remove(sourceSquare);
-            gameCopy.put(piece, targetSquare);
-            const newFen = gameCopy.fen();
-            return trySetFen(newFen);
-        }
-        return false;
-    }, [currentFen]);
 
-    const handleResetBoard = () => trySetFen(START_FEN);
-    const handleClearBoard = () => trySetFen(KINGS_ONLY_EMPTY_FEN);
+    const onSquareClick = useCallback(
+        (square) => {
+            handleSquareClick(square, isRemoveMode, currentFen, trySetFenWrapper)
+        },
+        [isRemoveMode, currentFen, trySetFenWrapper],
+    )
+
+    const handleResetBoard = () => trySetFenWrapper(START_FEN)
+    const handleClearBoard = () => trySetFenWrapper(KINGS_ONLY_EMPTY_FEN)
 
     const handleFenInputChange = (event) => {
         setFenInputValue(event.target.value);
@@ -110,45 +111,23 @@ const Analyze = () => {
     const handleImportFen = () => {
         const fenToLoad = fenInputValue.trim();
         if (!fenToLoad) {
-            setFenError("Empty FEN string; can't load.");
+            setFenError("Empty FEN string.");
             return;
         }
-        trySetFen(fenToLoad);
+        trySetFenWrapper(fenToLoad);
     };
 
     const toggleRemoveMode = () => setIsRemoveMode(!isRemoveMode);
     const toggleShowArrows = () => setShowArrows(!showArrows)
     const toggleShowThreats = () => setShowThreats(!showThreats)
-    const handleSwitchSides = () => {
-        try {
-            const fenParts = currentFen.split(" ")
-            if (fenParts.length < 2) {
-                setFenError("Invalid FEN format.")
-                return
-            }
-            fenParts[1] = fenParts[1] === "w"?"b":"w"
 
-            const newFen = fenParts.join(" ")
-            trySetFen(newFen)
-        } catch (error) {
-            console.error("Error switching sides:", error)
-            setFenError("Could not switch sides.")
-        }
-    }
-    const handleSquareClick = useCallback((square) => {
-        if (isRemoveMode) {
-            const gameCopy = new Chess(currentFen);
-            const piece = gameCopy.get(square);
-            if (piece) {
-                gameCopy.remove(square);
-                const newFen = gameCopy.fen();
-                trySetFen(newFen);
-            }
-        }
-    }, [isRemoveMode, currentFen]);
+    const handleSwitchSides = useCallback(() => {
+        switchSides(currentFen, trySetFenWrapper, setFenError)
+    }, [currentFen, trySetFenWrapper, setFenError])
+
 
     const handleAnalyzePosition = async () => {
-        if (!trySetFen(currentFen)) {
+        if (!trySetFenWrapper(currentFen)) {
             setAnalysisError("Cannot analyze an invalid board position.");
             return;
         }
@@ -247,13 +226,8 @@ const Analyze = () => {
 
         return styles
     }
-    const getSideToMove = () => {
-        const fenParts = currentFen.split(" ")
-        if (fenParts.length >= 2) {
-            return fenParts[1]
-        }
-        return "w"
-    }
+    const sideToMove = getSideToMove(currentFen)
+
     return (
         <div className="analyze-page-container">
             <h2>Analyze with Stockfish 17</h2>
@@ -274,10 +248,10 @@ const Analyze = () => {
                                 {isRemoveMode ? " ON" : " OFF"}
                             </button>
                         </Tooltip>
-                        <Tooltip content={`${getSideToMove() === "w" ? "White" : "Black"} to move. Click to switch sides`}>
+                        <Tooltip content={`${sideToMove === "w" ? "White" : "Black"} to move. Click to switch sides`}>
                             <button
                                 onClick={handleSwitchSides}
-                                className={`side-switch-button ${getSideToMove() === "w" ? "white-to-move" : "black-to-move"}`}
+                                className={`side-switch-button ${sideToMove === "w" ? "white-to-move" : "black-to-move"}`}
                                 aria-label="Switch side to move"
                             >
                                 <FiRefreshCw />
@@ -324,7 +298,7 @@ const Analyze = () => {
                         <Chessboard
                             position={currentFen}
                             onPieceDrop={onPieceDrop}
-                            onSquareClick={handleSquareClick}
+                            onSquareClick={onSquareClick}
                             arePiecesDraggable={!isRemoveMode}
                             boardWidth={Math.min(500, window.innerWidth > 768 ? 500 : window.innerWidth - 40)}
                             customBoardStyle={{

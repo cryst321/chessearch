@@ -6,7 +6,7 @@ import {FiTrash2, FiXCircle, FiChevronRight, FiRefreshCw, FiInfo} from 'react-ic
 import { findSimilarPositions } from '../../services/searchService';
 import './Search.scss';
 import Tooltip from "../../components/Tooltip/Tooltip";
-import { handlePromotion } from "../../services/chessUtils"
+import { handlePieceDrop, handleSquareClick, trySetFen, switchSides, getSideToMove }  from "../../services/chessUtils"
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const KINGS_ONLY_EMPTY_FEN = '8/8/8/4k3/8/8/8/4K3 w - - 0 1';
@@ -31,91 +31,39 @@ const Search = () => {
     }, [currentFen]);
 
     /* validate FEN before updating */
-    const trySetFen = (newFen) => {
-        try {
-            const tempGame = new Chess(newFen);
-            setGame(tempGame);
-            setCurrentFen(newFen);
-            setFenError('');
-            return true;
-        } catch (e) {
-            console.error("Invalid FEN generated:", newFen, e);
-            setFenError("Only valid positions allowed.");
-            return false;
-        }
-    };
+    const trySetFenWrapper = useCallback(
+        (newFen) => {
+            return trySetFen(newFen, setGame, setCurrentFen, setFenInputValue, setFenError)
+        },
+        [setGame, setCurrentFen, setFenInputValue, setFenError],
+    )
+
     const onPieceDrop = useCallback(
         (sourceSquare, targetSquare, piece) => {
             setFenError("")
-            const gameCopy = new Chess(currentFen)
-
-            const pieceObj = gameCopy.get(sourceSquare)
-            if (pieceObj && pieceObj.type === "p") {
-                const targetRank = targetSquare.charAt(1)
-                const isPromotionMove =
-                    (pieceObj.color === "w" && targetRank === "8") || (pieceObj.color === "b" && targetRank === "1")
-
-                if (isPromotionMove) {
-                    console.log("Promotion detected. Piece:", piece)
-                    let promotionPiece = "q"
-
-                    if (piece && piece.length > 1) {
-                        promotionPiece = piece.charAt(1).toLowerCase()
-                        console.log("Promotion piece extracted:", promotionPiece)
-                    }
-
-                    const newFen = handlePromotion(
-                        gameCopy,
-                        sourceSquare,
-                        targetSquare,
-                        pieceObj.color === "w" ? "wP" : "bP",
-                        promotionPiece,
-                    )
-
-                    if (newFen) {
-                        return trySetFen(newFen)
-                    }
-                    return false
-                }
-            }
-            if (pieceObj) {
-                gameCopy.remove(sourceSquare)
-                gameCopy.put(pieceObj, targetSquare)
-                const newFen = gameCopy.fen()
-                return trySetFen(newFen)
-            }
-            return false
+            return handlePieceDrop(sourceSquare, targetSquare, piece, currentFen, trySetFenWrapper)
         },
-        [currentFen],
+        [currentFen, trySetFenWrapper],
     )
-
+    const onSquareClick = useCallback(
+        (square) => {
+            handleSquareClick(square, isRemoveMode, currentFen, trySetFenWrapper)
+        },
+        [isRemoveMode, currentFen, trySetFenWrapper],
+    )
     const handleResetBoard = () => {
-        trySetFen(START_FEN);
-        setIsRemoveMode(false);
-    };
+        trySetFenWrapper(START_FEN)
+        setIsRemoveMode(false)
+    }
 
     const handleClearBoard = () => {
-        trySetFen(KINGS_ONLY_EMPTY_FEN);
-        setIsRemoveMode(false);
-    };
-
-    const handleSwitchSides = () => {
-        try {
-            const fenParts = currentFen.split(" ")
-
-            if (fenParts.length < 2) {
-                setFenError("Invalid FEN format.")
-                return
-            }
-            fenParts[1] = fenParts[1] === "w"?"b":"w"
-            const newFen = fenParts.join(" ")
-
-            trySetFen(newFen)
-        } catch (error) {
-            console.error("Error switching sides:", error)
-            setFenError("Could not switch sides.")
-        }
+        trySetFenWrapper(KINGS_ONLY_EMPTY_FEN)
+        setIsRemoveMode(false)
     }
+    const handleSwitchSides = useCallback(() => {
+        switchSides(currentFen, trySetFenWrapper, setFenError)
+    }, [currentFen, trySetFenWrapper, setFenError])
+
 
     const getSideToMove = () => {
         const fenParts = currentFen.split(" ")
@@ -125,26 +73,26 @@ const Search = () => {
         return "w"
     }
     const handleFenInputChange = (event) => {
-        setFenInputValue(event.target.value);
-        setFenError('');
-    };
+        setFenInputValue(event.target.value)
+        setFenError("")
+    }
 
     const handleImportFen = () => {
-        const fenToLoad = fenInputValue.trim();
+        const fenToLoad = fenInputValue.trim()
         if (!fenToLoad) {
-            setFenError("Empty FEN string; can't load.");
-            return;
+            setFenError("Empty FEN string.")
+            return
         }
-        if (trySetFen(fenToLoad)) {
-            console.log("FEN loaded successfully");
-            setIsRemoveMode(false);
+        if (trySetFenWrapper(fenToLoad)) {
+            console.log("FEN loaded successfully")
+            setIsRemoveMode(false)
         }
-    };
+    }
 
     const handleSearch = async () => {
         setSearchError('');
         setFenError('');
-        if (!trySetFen(currentFen)) {
+        if (!trySetFenWrapper(currentFen)) {
             return;
         }
         setIsSearching(true);
@@ -171,25 +119,13 @@ const Search = () => {
         setFenError('');
         console.log("Remove mode:", !isRemoveMode ? "ON" : "OFF");
     };
-    const handleSquareClick = useCallback((square) => {
-        if (isRemoveMode) {
-            const gameCopy = new Chess(currentFen);
-            const piece = gameCopy.get(square);
-
-            if (piece) {
-                console.log(`Removing piece ${piece.type} from ${square}`);
-                gameCopy.remove(square);
-                const newFen = gameCopy.fen();
-                trySetFen(newFen);
-            } else {
-                console.log(`No piece to remove on ${square}`);
-            }
-        }
-    }, [isRemoveMode, currentFen]);
 
     const toggleHelpSection = () => {
         setIsHelpOpen(!isHelpOpen);
     };
+
+    const sideToMove = getSideToMove(currentFen)
+
     return (
         <div className="search-page-container">
             <h2>Setup Position for Search</h2>
@@ -208,10 +144,10 @@ const Search = () => {
                                 {isRemoveMode ? " ON" : " OFF"}
                             </button>
                         </Tooltip>
-                        <Tooltip content={`${getSideToMove() === "w" ? "White" : "Black"} to move. Click to switch sides`}>
+                        <Tooltip content={`${sideToMove === "w" ? "White" : "Black"} to move. Click to switch sides`}>
                             <button
                                 onClick={handleSwitchSides}
-                                className={`side-switch-button ${getSideToMove() === "w" ? "white-to-move" : "black-to-move"}`}
+                                className={`side-switch-button ${sideToMove === "w" ? "white-to-move" : "black-to-move"}`}
                                 aria-label="Switch side to move"
                             >
                                 <FiRefreshCw />
@@ -223,7 +159,7 @@ const Search = () => {
                         <Chessboard
                             position={currentFen}
                             onPieceDrop={onPieceDrop}
-                            onSquareClick={handleSquareClick}
+                            onSquareClick={onSquareClick}
                             arePiecesDraggable={!isRemoveMode}
                             boardWidth={Math.min(500, window.innerWidth > 768 ? 500 : window.innerWidth - 40)}
                             customBoardStyle={{
