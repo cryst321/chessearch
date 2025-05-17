@@ -5,6 +5,7 @@ import { getChessAnalysis } from '../../services/analysisService';
 import { FiTrash2, FiXCircle, FiPlayCircle, FiInfo, FiEye, FiEyeOff,FiTarget, FiRefreshCw } from 'react-icons/fi';
 import './Analyze.scss';
 import Tooltip from "../../components/Tooltip/Tooltip"
+import { handlePromotion } from "../../services/chessUtils"
 
 const BEST_MOVE_COLOR = "rgba(243,112,41,0.92)"
 const CONTINUATION_COLOR = "rgba(111,58,175,0.82)"
