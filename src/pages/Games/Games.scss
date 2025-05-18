@@ -15,6 +15,127 @@
 
     text-shadow: -1px -1px 1px rgba($lavender-blush, 0.7), 1px 1px 1px rgba($dim-gray, 0.6);
   }
+  .filter-bar {
+    background-color: lighten($lavender-blush, 3%);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+  }
+  .filter-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    flex-grow: 1;
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      padding: 0.6rem 0.8rem;
+      border: 1px solid $battleship-gray;
+      border-radius: 4px;
+      font-family: $font-family;
+      font-size: 0.95rem;
+      color: $eggplant;
+      background-color: #fff;
+      flex: 1 1 auto;
+
+      &:focus {
+        outline: 2px solid $dim-gray;
+        outline-offset: 1px;
+        border-color: $dim-gray;
+      }
+    }
+
+    input[type="number"] {
+      width: 80px;
+      flex: 0 0 auto;
+
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      -moz-appearance: textfield;
+    }
+
+    .date-filters {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1 1 auto;
+      min-width: 200px;
+
+      .date-label {
+        font-size: 0.95rem;
+        color: $dim-gray;
+        font-weight: bold;
+      }
+
+      input[type="date"] {
+        flex: 1 1 auto;
+      }
+      .date-separator {
+        font-size: 1.2rem;
+        color: $dim-gray;
+      }
+    }
+  }
+
+
+  .filter-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .filter-button {
+    padding: 0.6rem 1.2rem;
+    background-color: $eggplant;
+    color: $lavender-blush;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: $font-family;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: lighten($eggplant, 10%);
+    }
+
+    &:disabled {
+      background-color: $battleship-gray;
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    &:focus {
+      outline: 2px solid $dim-gray;
+      outline-offset: 2px;
+    }
+
+    &.secondary {
+      background-color: $battleship-gray;
+      color: $pearl;
+      &:hover:not(:disabled) {
+        background-color: lighten($battleship-gray, 10%);
+      }
+    }
+  }
 }
 
 .loading-indicator,

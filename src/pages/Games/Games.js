@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import { Link } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 
@@ -26,12 +26,39 @@ const Games = () => {
     const pageInputRef = useRef(null);
     const gamesGridRef = useRef(null);
 
-    useEffect(() => {
-        const fetchGamePreviews = async () => {
+    const [filters, setFilters] = useState({
+        eco: '',
+        dateFrom: '',
+        dateTo: '',
+        result: '',
+        minElo: '',
+        maxElo: '',
+        playerName: ''
+    });
+
+    /**updates when user applies filters w button**/
+    const [appliedFilters, setAppliedFilters] = useState(filters);
+
+    const fetchGamePreviews = useCallback(async () => {
             setIsLoading(true);
             setError(null);
-            const apiUrl = `${API_BASE_URL}?page=${currentPage}&size=${PAGE_SIZE}`;
 
+            const params = new URLSearchParams();
+            params.append('page', currentPage);
+            params.append('size', PAGE_SIZE);
+
+
+        if (appliedFilters.eco) params.append('eco', appliedFilters.eco);
+        if (appliedFilters.dateFrom) params.append('dateFrom', appliedFilters.dateFrom);
+        if (appliedFilters.dateTo) params.append('dateTo', appliedFilters.dateTo);
+        if (appliedFilters.result) params.append('result', appliedFilters.result);
+        if (appliedFilters.minElo !== '' && !isNaN(parseInt(appliedFilters.minElo))) params.append('minElo', appliedFilters.minElo);
+        if (appliedFilters.maxElo !== '' && !isNaN(parseInt(appliedFilters.maxElo))) params.append('maxElo', appliedFilters.maxElo);
+        if (appliedFilters.playerName) params.append('player', appliedFilters.playerName);
+
+
+        const apiUrl = `${API_BASE_URL}?${params.toString()}`;
+        console.log("Fetching:", apiUrl);
             try {
                 const response = await fetch(apiUrl);
 
@@ -40,7 +67,8 @@ const Games = () => {
                 }
                 const paginatedData = await response.json();
 
-                if (!paginatedData || !Array.isArray(paginatedData.previews)) {
+                if (!paginatedData || !Array.isArray(paginatedData.previews)|| typeof paginatedData.totalPages !== 'number' || typeof paginatedData.totalGames !== 'number') {
+                    console.error("Invalid data format received from server:", paginatedData);
                     throw new Error("Invalid data format received from server.");
                 }
 
@@ -57,43 +85,50 @@ const Games = () => {
             } finally {
                 setIsLoading(false);
             }
-        };
+        }, [currentPage, appliedFilters]);
 
+    useEffect(() => {
         fetchGamePreviews();
+    }, [fetchGamePreviews]);
 
-    }, [currentPage]);
-    const goToPage = (pageIndex) => {
-        const newPageIndex = Math.max(0, Math.min(totalPages>0 ? totalPages-1 : 0, pageIndex));
+        const goToPage = useCallback((pageIndex) => {
+            const maxPage = totalPages > 0 ? totalPages - 1 : 0;
+            const newPageIndex =Math.max(0, Math.min(maxPage, pageIndex));
 
-        setCurrentPage(newPageIndex);
-        setIsEditingPage(false);
-    };
-    const goToFirstPage = () => {
-        goToPage(0);
-    };
+            if (totalPages === 0) {
+                setCurrentPage(0);
+            } else if (newPageIndex !== currentPage) {
+                setCurrentPage(newPageIndex);
+            }
+            setIsEditingPage(false);
+    },[currentPage, totalPages]);
 
-    const goToPrevPage = () => {
-        goToPage(currentPage - 1);
-    };
+        const goToFirstPage = useCallback(() => {
+            goToPage(0);
+        }, [goToPage]);
 
-    const goToNextPage = () => {
-        if (currentPage < totalPages - 1) {
-            goToPage(currentPage + 1);
-        }
-    };
+        const goToPrevPage = useCallback(() => {
+            goToPage(currentPage - 1);
+        }, [currentPage, goToPage]);
 
-    const goToLastPage = () => {
-        if (totalPages > 0) {
-            goToPage(totalPages - 1);
-        }
-    };
+        const goToNextPage = useCallback(() => {
+            if (currentPage < totalPages - 1) {
+                goToPage(currentPage + 1);
+            }
+        }, [currentPage, totalPages, goToPage]);
 
-    /* logic for inputing page number manually */
-    const handlePageDisplayClick = () => {
+        const goToLastPage = useCallback(() => {
+            if (totalPages > 0) {
+                goToPage(totalPages - 1);
+            }
+        }, [totalPages, goToPage]);
+
+        /* logic for inputing page number manually */
+    const handlePageDisplayClick = useCallback (() => {
         if (isLoading || totalPages === 0) return;
         setEditPageValue(String(currentPage + 1));
         setIsEditingPage(true);
-    };
+    },[isLoading,currentPage,totalPages]);
 
 
     useEffect(() => {
@@ -104,12 +139,12 @@ const Games = () => {
     }, [isEditingPage]);
 
 
-    const handlePageInputChange = (e) => {
+    const handlePageInputChange = useCallback((e) => {
         setEditPageValue(e.target.value);
-    };
+    },[]);
 
    /* submitting page input */
-    const handlePageInputSubmit = () => {
+    const handlePageInputSubmit = useCallback(() => {
         const targetPageOneBased = parseInt(editPageValue, 10);
 
         if (!isNaN(targetPageOneBased) && targetPageOneBased >= 1 && targetPageOneBased <= totalPages) {
@@ -118,36 +153,139 @@ const Games = () => {
         } else {
             console.warn("Invalid page number entered:", editPageValue);
             setIsEditingPage(false);
-        }
-    };
+            setEditPageValue('');
 
-    const handlePageInputKeyDown = (e) => {
+        }
+    },[editPageValue, totalPages, goToPage]);
+
+    const handlePageInputKeyDown = useCallback((e) => {
         if (e.key === 'Enter') {
             handlePageInputSubmit();
         } else if (e.key === 'Escape') {
             setIsEditingPage(false);
             setEditPageValue('');
         }
-    };
+    },[handlePageInputSubmit]);
 
-    const handlePageInputBlur = () => {
+    const handlePageInputBlur =  useCallback(() => {
         setIsEditingPage(false);
         setEditPageValue('');
-    };
+    },[]);
 
-    const hasMorePages = currentPage < totalPages - 1;
+        const handleFilterChange =  useCallback((e) => {
+            const { name, value } = e.target;
+            setFilters(prevFilters => ({
+                ...prevFilters,
+                [name]: value
+            }));
+        },[]);
+
+        const handleApplyFilters =  useCallback(() => {
+            setCurrentPage(0);
+            setAppliedFilters(filters);
+        },[filters]);
+
+        const handleClearFilters = useCallback(() => {
+            const initialFilters = { eco: '', dateFrom: '', dateTo: '', result: '', minElo: '', maxElo: '', playerName: '' };
+            setFilters(initialFilters);
+            setCurrentPage(0);
+            setAppliedFilters(initialFilters);
+        },[]);
+
+    const isFirstPage = currentPage === 0;
+    const isLastPage = totalPages === 0 || currentPage >= totalPages - 1;
 
     return (
         <div className="games-page-container">
             <h2>Browse Games</h2>
+
+            {/* filters */}
+            <div className="filter-bar">
+                <div className="filter-inputs">
+                    <input
+                        type="text"
+                        name="playerName"
+                        value={filters.playerName}
+                        onChange={handleFilterChange}
+                        placeholder="Player name"
+                        aria-label="Filter by player's name"
+                    />
+                    <input
+                        type="text"
+                        name="eco"
+                        value={filters.eco}
+                        onChange={handleFilterChange}
+                        placeholder="ECO code"
+                        aria-label="Filter by ECO code"
+                    />
+                    <input
+                        type="text"
+                        name="result"
+                        value={filters.result}
+                        onChange={handleFilterChange}
+                        placeholder="Result"
+                        aria-label="Filter by game result"
+                    />
+                    <input
+                        type="number"
+                        name="minElo"
+                        value={filters.minElo}
+                        onChange={handleFilterChange}
+                        placeholder="Min ELO"
+                        aria-label="Filter by minimum ELO"
+                    />
+                    <input
+                        type="number"
+                        name="maxElo"
+                        value={filters.maxElo}
+                        onChange={handleFilterChange}
+                        placeholder="Max ELO"
+                        aria-label="Filter by maximum ELO"
+                    />
+                    <div className="date-filters">
+                        <label htmlFor="dateFrom" className="date-label">Date:</label>
+                        <input
+                            id="dateFrom"
+                            type="date"
+                            name="dateFrom"
+                            value={filters.dateFrom}
+                            onChange={handleFilterChange}
+                            title="Date From"
+                            aria-label="Filter by date from"
+                        />
+                        <span className="date-separator">-</span>
+                        <input
+                            type="date"
+                            name="dateTo"
+                            value={filters.dateTo}
+                            onChange={handleFilterChange}
+                            title="Date To"
+                            aria-label="Filter by date to"
+                        />
+                    </div>
+                </div>
+                <div className="filter-buttons">
+                    <button onClick={handleApplyFilters} disabled={isLoading} className="filter-button">
+                        Search
+                    </button>
+                    <button onClick={handleClearFilters} disabled={isLoading} className="filter-button secondary">
+                        Clear
+                    </button>
+                </div>
+            </div>
+
             <div className="games-message-area">
             {isLoading && <div className="loading-indicator">Loading...</div>}
             {error && <div className="error-message">{error}</div>}
 
                 {!isLoading && !error && previews.length === 0 && (
                     <p className="no-games-message">
-                        {currentPage>0 && totalPages>0 ? "You've reached the end." : "No games found."}
-                    </p>
+                        {appliedFilters.eco || appliedFilters.dateFrom || appliedFilters.dateTo ||
+                        appliedFilters.result || appliedFilters.minElo || appliedFilters.maxElo ||
+                        appliedFilters.playerName ?
+                            "No games found matching the applied filters." :
+                            (currentPage > 0 && totalPages > 0 ? "You've reached the end." : "No games found.")
+                        }</p>
                 )}
             </div>
 
@@ -181,11 +319,11 @@ const Games = () => {
                 ))}
             </div>
 
-            { (totalPages > 0) &&
+            { (totalPages > 0 || isLoading) &&
                 <div className="pagination-controls">
                     <button
                         onClick={goToFirstPage}
-                        disabled={currentPage === 0 || isLoading}
+                        disabled={isFirstPage || isLoading}
                         className="pagination-button icon-button"
                         aria-label="Go to first page"
                         title="Go to first page"
@@ -194,7 +332,7 @@ const Games = () => {
                     </button>
                     <button
                         onClick={goToPrevPage}
-                        disabled={currentPage === 0 || isLoading}
+                        disabled={isFirstPage  || isLoading}
                         className="pagination-button icon-button"
                         aria-label="Previous Page"
                         title="Previous Page"
@@ -213,6 +351,7 @@ const Games = () => {
                             onBlur={handlePageInputBlur}
                             min="1"
                             max={totalPages > 0 ? totalPages : 1}
+                            step="1"
                         />
                     ) : (
                         <span
@@ -222,7 +361,7 @@ const Games = () => {
                             tabIndex={0}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePageDisplayClick(); }}
                             role="button"
-                            aria-label={`Page ${currentPage + 1}. Click to edit.`}
+                            aria-label={`Page ${currentPage + 1} of ${totalPages}. Click to edit.`}
                         >
                             [ {currentPage + 1}  / {totalPages} ]
                         </span>
@@ -230,7 +369,7 @@ const Games = () => {
 
                     <button
                         onClick={goToNextPage}
-                        disabled={!hasMorePages || isLoading}
+                        disabled={isLastPage  || isLoading}
                         className="pagination-button icon-button"
                         aria-label="Next Page"
                         title="Next Page"
@@ -239,7 +378,7 @@ const Games = () => {
                     </button>
                     <button
                         onClick={goToLastPage}
-                        disabled={currentPage >= totalPages - 1 || isLoading || totalPages === 0}
+                        disabled={isLastPage || isLoading}
                         className="pagination-button icon-button"
                         aria-label="Go to last page"
                         title="Go to last page"
