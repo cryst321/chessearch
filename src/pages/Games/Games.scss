@@ -19,7 +19,6 @@
     background-color: lighten($lavender-blush, 3%);
     padding: 1.5rem;
     border-radius: 0.5rem;
-    margin-bottom: 2rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
@@ -39,7 +38,7 @@
 
     input[type="text"],
     input[type="number"],
-    input[type="date"] {
+    input[type="date"], select {
       padding: 0.6rem 0.8rem;
       border: 1px solid $battleship-gray;
       border-radius: 4px;
@@ -47,8 +46,8 @@
       font-size: 0.95rem;
       color: $eggplant;
       background-color: #fff;
-      flex: 1 1 auto;
-
+      flex-shrink: 1;
+      min-width: 0;
       &:focus {
         outline: 2px solid $dim-gray;
         outline-offset: 1px;
@@ -56,9 +55,17 @@
       }
     }
 
+    input[type="text"],
+    select {
+      flex-grow: 1;
+      flex-basis: 150px;
+      min-width: 150px;
+    }
+
     input[type="number"] {
-      width: 80px;
-      flex: 0 0 auto;
+      width: 100px;
+      flex-grow: 0;
+      flex-shrink: 0;
 
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
@@ -72,8 +79,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      flex: 1 1 auto;
-      min-width: 200px;
+      flex: 1 1 auto; // Дозволяємо контейнеру дат рости/стискатися
+      min-width: 200px; // Мінімальна ширина для контейнера дат
 
       .date-label {
         font-size: 0.95rem;
@@ -96,7 +103,7 @@
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
-
+    flex-shrink: 0;
     @media (min-width: 768px) {
       flex-direction: row;
       align-items: center;
@@ -129,10 +136,18 @@
     }
 
     &.secondary {
-      background-color: $battleship-gray;
-      color: $pearl;
+      background-color: $pearl;
+      color: $eggplant;
+      border: 1px solid $battleship-gray;
+
       &:hover:not(:disabled) {
-        background-color: lighten($battleship-gray, 10%);
+        background-color: lighten($pearl, 5%);
+        color: darken($eggplant, 10%);
+
+      }
+      &:focus {
+        outline: 2px solid $dim-gray;
+        outline-offset: 2px;
       }
     }
   }
@@ -199,8 +214,8 @@
   justify-content: center;
 
   .board-placeholder {
-    height: 200px;
-    width: 200px;
+    height: 160px;
+    width: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -313,9 +328,17 @@
   width: 100%;
 }
 .games-message-area {
-  min-height: 60px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  padding: 0 1rem;
+  .loading-indicator, .error-message, .no-games-message {
+    padding: 0;
+    font-size: 1.1em;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+  }
 }

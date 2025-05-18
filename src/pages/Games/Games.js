@@ -218,14 +218,17 @@ const Games = () => {
                         placeholder="ECO code"
                         aria-label="Filter by ECO code"
                     />
-                    <input
-                        type="text"
+                    <select
                         name="result"
                         value={filters.result}
                         onChange={handleFilterChange}
-                        placeholder="Result"
                         aria-label="Filter by game result"
-                    />
+                    >
+                        <option value="">Any</option>
+                        <option value="1-0">White won</option>
+                        <option value="0-1">Black won</option>
+                        <option value="1/2-1/2">Draw</option>
+                    </select>
                     <input
                         type="number"
                         name="minElo"
