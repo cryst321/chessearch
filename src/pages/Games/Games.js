@@ -174,6 +174,13 @@ const Games = () => {
 
         const handleFilterChange =  useCallback((e) => {
             const { name, value } = e.target;
+            
+    
+            if ((name === 'minElo' || name === 'maxElo') && value !== '') {
+                const numValue = parseInt(value);
+                if (numValue < 0) return; 
+            }
+            
             setFilters(prevFilters => ({
                 ...prevFilters,
                 [name]: value
@@ -235,6 +242,7 @@ const Games = () => {
                         value={filters.minElo}
                         onChange={handleFilterChange}
                         placeholder="Min ELO"
+                        min="0"
                         aria-label="Filter by minimum ELO"
                     />
                     <input
@@ -243,6 +251,7 @@ const Games = () => {
                         value={filters.maxElo}
                         onChange={handleFilterChange}
                         placeholder="Max ELO"
+                        min="0"
                         aria-label="Filter by maximum ELO"
                     />
                     <div className="date-filters">
