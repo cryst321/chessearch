@@ -1,0 +1,109 @@
+@import '../../styles/variables';
+
+.side-decoration {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  pointer-events: none;
+  z-index: -1;
+
+  @media (max-width: 1400px) {
+    display: none;
+  }
+
+  &.left {
+    left: 6rem;
+    align-items: flex-start;
+
+    .piece-icon {
+      transform: translateX(-30%) rotate(-15deg);
+      
+      &:nth-child(even) {
+        transform: translateX(-30%) rotate(10deg);
+      }
+      
+      &.faded {
+        transform: translateX(-60%) rotate(-15deg);
+        
+        &:nth-child(even) {
+          transform: translateX(-60%) rotate(10deg);
+        }
+      }
+    }
+  }
+
+  &.right {
+    right: 6rem;
+    align-items: flex-end;
+
+    .piece-icon {
+      transform: translateX(30%) rotate(15deg);
+      
+      &:nth-child(even) {
+        transform: translateX(30%) rotate(-10deg);
+      }
+      
+      &.faded {
+        transform: translateX(60%) rotate(15deg);
+        
+        &:nth-child(even) {
+          transform: translateX(60%) rotate(-10deg);
+        }
+      }
+    }
+  }
+
+  .piece-icon {
+    font-size: 4.5rem;
+    color: $eggplant;
+    opacity: 0.15;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+
+    &.faded {
+      font-size: 4rem;
+      opacity: 0.1;
+    }
+  }
+
+  &.admin {
+    .piece-icon {
+      color: darken($eggplant, 10%);
+      opacity: 0.2;
+      font-size: 5.5rem;
+      
+      &:nth-child(even) {
+        transform: scale(0.9) rotate(180deg);
+      }
+      
+      &.faded {
+        font-size: 5rem;
+        opacity: 0.12;
+        filter: blur(1px);
+      }
+    }
+
+    &.left .piece-icon {
+      transform: translateX(-20%) rotate(-25deg);
+      
+      &.faded {
+        transform: translateX(-40%) rotate(-25deg);
+      }
+    }
+
+    &.right .piece-icon {
+      transform: translateX(20%) rotate(25deg);
+      
+      &.faded {
+        transform: translateX(40%) rotate(25deg);
+      }
+    }
+  }
+} 

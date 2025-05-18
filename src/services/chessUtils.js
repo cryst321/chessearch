@@ -158,7 +158,6 @@ export const handleSquareClick = (square, isRemoveMode, currentFen, trySetFenFun
  */
 export const switchSides = (currentFen, trySetFenFunc, setFenError) => {
     try {
-        // Parse the current FEN
         const fenParts = currentFen.split(" ")
 
         if (fenParts.length < 2) {
