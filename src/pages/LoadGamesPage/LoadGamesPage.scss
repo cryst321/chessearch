@@ -67,26 +67,7 @@
       padding-bottom: 0.5rem;
     }
   }
-  .file-upload-group {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    margin-bottom: 1rem;
 
-    .form-group {
-      flex: 1 1 50%;
-      margin-bottom: 0;
-      min-width: 0;
-    }
-
-    .admin-action-button {
-
-      flex: 1 1 50%;
-      margin-top: 0;
-      text-align: center;
-      padding: 0.7rem 1rem;
-    }
-  }
   .form-group {
     margin-bottom: 1rem;
 
@@ -99,11 +80,60 @@
 
     input[type="file"] {
       display: block;
-      padding: 0.5rem;
+      padding: 0.7rem;
       border: 1px solid $battleship-gray;
       border-radius: 4px;
       width: 100%;
       box-sizing: border-box;
+      font-size: 0.9rem;
+      font-family: $font-family;
+
+      &:focus {
+        outline: 2px solid $dim-gray;
+        border-color: $dim-gray;
+      }
+
+      &:disabled {
+        background-color: lighten($pearl, 10%);
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: lighten($dim-gray, 20%);
+      }
+    }
+
+    input[type="number"] {
+      display: inline-block;
+      padding: 0.7rem;
+      border: 1px solid $battleship-gray;
+      border-radius: 4px;
+      width: 250px;
+      box-sizing: border-box;
+      font-size: 0.9rem;
+      font-family: $font-family;
+      text-align: center;
+      -moz-appearance: textfield;
+      
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      &:focus {
+        outline: 2px solid $dim-gray;
+        border-color: $dim-gray;
+      }
+
+      &:disabled {
+        background-color: lighten($pearl, 10%);
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: lighten($dim-gray, 20%);
+      }
     }
 
     textarea {
@@ -123,6 +153,26 @@
       &:disabled {
         background-color: lighten($pearl, 10%);
       }
+    }
+  }
+
+  .file-upload-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+
+    .form-group {
+      flex: 1 1 50%;
+      margin-bottom: 0;
+      min-width: 0;
+    }
+
+    .admin-action-button {
+      flex: 1 1 50%;
+      margin-top: 0;
+      text-align: center;
+      padding: 0.7rem 1rem;
     }
   }
 

@@ -8,13 +8,17 @@ export const API_ADMIN_BASE = 'http://localhost:8080/api/admin';
 /**
  * Upload PGN file to backend
  * @param {File} pgnFile - PGN file object.
+ * @param {number} maxGames - Maximum number of games to upload.
  * @returns {Promise<string>}
  * @throws {Error}
  */
-export const uploadPgnFile = async (pgnFile) => {
+export const uploadPgnFile = async (pgnFile, maxGames) => {
     const csrfToken = getCsrfToken();
     const formData = new FormData();
     formData.append('pgnFile', pgnFile);
+    if (maxGames) {
+        formData.append('maxGames', maxGames);
+    }
 
     const response = await fetch(`${API_ADMIN_BASE}/upload-pgn-file`, {
         method: 'POST',
@@ -36,12 +40,13 @@ export const uploadPgnFile = async (pgnFile) => {
 /**
  * Uploads PGN data as a raw string to the backend
  * @param {string} pgnStringData - string containing PGN data.
+ * @param {number} maxGames - Maximum number of games to upload.
  * @returns {Promise<string>}
  * @throws {Error}
  */
-export const uploadPgnString = async (pgnStringData) => {
+export const uploadPgnString = async (pgnStringData, maxGames) => {
     const csrfToken = getCsrfToken();
-    const response = await fetch(`${API_ADMIN_BASE}/upload-pgn-string`, {
+    const response = await fetch(`${API_ADMIN_BASE}/upload-pgn-string${maxGames ? `?maxGames=${maxGames}` : ''}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'text/plain',

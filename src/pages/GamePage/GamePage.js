@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { DeleteOutlined } from '@ant-design/icons';
+import * as api from '../../services/api';
 import ChessBoardDisplay from '../../components/ChessBoardDisplay/ChessBoardDisplay';
 import GameInfo from '../../components/GameInfo/GameInfo';
 
 import './GamePage.scss';
-
-const API_BASE_URL = 'http://localhost:8080/api/game';
-
-const api = {
-    getGameById: async (id) => {
-        const response = await fetch(`${API_BASE_URL}/${id}`);
-        if (!response.ok) {
-            if (response.status === 404) {
-                return null;
-            }
-            throw new Error(`Status: ${response.status}`);
-        }
-        return await response.json();
-    },
-};
 
 /**
  * Page for displaying a chess game and relevant metadata
@@ -28,7 +16,7 @@ const api = {
 const GamePage = () => {
     const { gameId } = useParams();
     const navigate = useNavigate();
-
+    const { isAdmin } = useAuth();
     const [gameData, setGameData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -71,6 +59,18 @@ const GamePage = () => {
         navigate('/games');
     };
 
+    const handleDelete = () => {
+        if (window.confirm('Are you sure you want to delete this game? This action cannot be undone.')) {
+            api.deleteGame(gameId)
+                .then(() => {
+                    navigate('/games');
+                })
+                .catch(() => {
+                    alert('Failed to delete game. Please try again.');
+                });
+        }
+    };
+
     if (isLoading) {
         return <div className="game-page-loading">Loading game data...</div>;
     }
@@ -106,8 +106,16 @@ const GamePage = () => {
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                 </button>
-            <h1 className="game-page-title">{gameData.white} vs. {gameData.black} (ID: {gameId})</h1>
-                 <div style={{ width: 'button-width-plus-margin' }}></div>
+                <h1 className="game-page-title">{gameData.white} vs. {gameData.black} (ID: {gameId})</h1>
+                {isAdmin && (
+                    <button 
+                        className="delete-button" 
+                        onClick={handleDelete}
+                        title="Delete game"
+                    >
+                        <DeleteOutlined />
+                    </button>
+                )}
             </div>
             <div className="game-layout">
                 {/* Chessboard */}

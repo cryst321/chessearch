@@ -9,7 +9,7 @@
 .page-header {
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
   margin-bottom: 2rem;
   min-height: 40px;
 }
@@ -17,7 +17,6 @@
 .game-page-title {
   color: $eggplant;
   text-align: center;
-  margin-bottom: 1rem;
   font-size: 1.8rem;
   text-shadow: -1px -1px 1px rgba($lavender-blush, 0.7),
   1px 1px 1px rgba($dim-gray, 0.6);
@@ -38,11 +37,7 @@
 }
 
 .back-button {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: $eggplant; ;
+  background-color: $eggplant;
   border: 1px solid $battleship-gray;
   color: $pearl;
   padding: 0.4rem;
@@ -72,6 +67,28 @@
   }
 }
 
+.delete-button {
+  background: none;
+  border: none;
+  color: $eggplant;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 30%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba($eggplant, 0.1);
+  }
+
+  .anticon {
+    font-size: 1.5rem;
+  }
+}
 
 .game-layout {
   display: grid;
@@ -81,4 +98,51 @@
   @media (min-width: 992px) {
     grid-template-columns: 2fr 1fr;
   }
+}
+
+.game-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        h2 {
+            margin: 0;
+        }
+
+        .delete-button {
+            background: none;
+            border: none;
+            color: #ff4d4f;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background-color: rgba(255, 77, 79, 0.1);
+            }
+
+            .anticon {
+                font-size: 20px;
+            }
+        }
+    }
+
+    .game-page-loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+
+    .game-page-error {
+        text-align: center;
+        padding: 20px;
+        color: #ff4d4f;
+    }
 }

@@ -11,9 +11,9 @@ const LoadGamesPage = () => {
     const [messageType, setMessageType] = useState('');
     const [rebuildProgress, setRebuildProgress] = useState(null);
     const [indexStats, setIndexStats] = useState(null);
+    const [maxGames, setMaxGames] = useState('');
     const eventSourceRef = useRef(null);
     const reconnectTimeoutRef = useRef(null);
-
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -25,6 +25,17 @@ const LoadGamesPage = () => {
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current);
             }
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleFocus = () => {
+            loadIndexStats();
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => {
+            window.removeEventListener('focus', handleFocus);
         };
     }, []);
 
@@ -71,7 +82,7 @@ const LoadGamesPage = () => {
         setMessage('');
         setMessageType('');
         try {
-            const responseMessage = await uploadPgnFile(selectedFile);
+            const responseMessage = await uploadPgnFile(selectedFile, maxGames ? parseInt(maxGames) : undefined);
             displayFeedback(responseMessage, 'success');
             setSelectedFile(null);
             if (fileInputRef.current) {
@@ -93,7 +104,7 @@ const LoadGamesPage = () => {
         setMessage('');
         setMessageType('');
         try {
-            const responseMessage = await uploadPgnString(pgnText);
+            const responseMessage = await uploadPgnString(pgnText, maxGames ? parseInt(maxGames) : undefined);
             displayFeedback(responseMessage, 'success');
             setPgnText('');
         } catch (error) {
@@ -203,6 +214,23 @@ const LoadGamesPage = () => {
 
             <div className="upload-section">
                 <h3>Upload PGN file</h3>
+                <div className="form-group">
+                    <label htmlFor="max-games">Maximum games to process (optional):</label>
+                    <input
+                        type="number"
+                        id="max-games"
+                        value={maxGames}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (parseInt(value) > 0)) {
+                                setMaxGames(value);
+                            }
+                        }}
+                        min="1"
+                        placeholder="Leave empty for no limit"
+                        disabled={isLoading}
+                    />
+                </div>
                 <div className="file-upload-group">
                     <div className="form-group">
                         <label htmlFor="pgn-file-input">Select PGN file:</label>
