@@ -1,0 +1,102 @@
+@import '../styles/variables';
+
+.about-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+
+    h1 {
+        color: $eggplant;
+        margin-bottom: 2rem;
+    }
+
+    .section {
+        margin-bottom: 1.5rem;
+        border: 1px solid $pearl;
+        border-radius: 8px;
+        overflow: hidden;
+
+        &.admin-section {
+            border-color: darken($pearl, 10%);
+            background-color: lighten($pearl, 5%);
+        }
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background-color: $lavender-blush;
+        color: $eggplant;
+        cursor: pointer;
+        margin: 0;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: darken($lavender-blush, 5%);
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+
+        &.expanded .toggle-icon {
+            transform: rotate(90deg);
+        }
+    }
+
+    .section-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, padding 0.3s ease;
+        padding: 0 1.5rem;
+        background-color: white;
+
+        &.expanded {
+            max-height: 2000px;
+            padding: 1.5rem;
+        }
+
+        p {
+            color: $dim-gray;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        h4 {
+            color: $eggplant;
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        ul, ol {
+            color: $dim-gray;
+            padding-left: 1.2rem;
+            margin-bottom: 1rem;
+
+            li {
+                margin-bottom: 0.5rem;
+                line-height: 1.5;
+            }
+        }
+
+        .screenshot-placeholder {
+            background-color: $pearl;
+            border: 2px dashed darken($pearl, 20%);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1rem 0;
+            text-align: center;
+            color: $battleship-gray;
+        }
+
+        .note {
+            font-style: italic;
+            color: $battleship-gray;
+            padding: 1rem;
+            border-left: 3px solid $eggplant;
+            background-color: lighten($pearl, 5%);
+            margin-top: 1rem;
+        }
+    }
+} 

@@ -1,4 +1,3 @@
-
 function getCsrfToken() {
     const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='));
     return csrfCookie ? csrfCookie.split('=')[1] : null;
@@ -15,20 +14,29 @@ const API_BASE = 'http://localhost:8080/api/auth';
  */
 export const loginUser = async (username, password) => {
     const csrfToken = getCsrfToken();
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
     const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken},
-        body: JSON.stringify({ username, password }),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-XSRF-TOKEN': csrfToken
+        },
+        body: formData.toString(),
         credentials: 'include'
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Login failed:", response.status, errorText);
-        throw new Error(errorText || `Login failed with status: ${response.status}`);
+        const errorData = await response.text();
+        console.error("Login failed:", response.status, errorData);
+        throw new Error(errorData || `Login failed with status: ${response.status}`);
     }
-/*username and role*/
-    return await response.json();
+
+    // After successful login, get user data
+    const userData = await checkStatus();
+    return userData;
 };
 
 /**

@@ -56,6 +56,11 @@ export const uploadPgnString = async (pgnStringData) => {
         console.error("PGN String Upload failed:", response.status, responseText);
         throw new Error(responseText || `String upload failed with status: ${response.status}`);
     }
+    
+    if (responseText.includes("no new games were added")) {
+        throw new Error("Data processed, but no valid games were found. Please check if the PGN format is correct.");
+    }
+    
     return responseText;
 };
 
