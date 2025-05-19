@@ -16,13 +16,13 @@ const Home = () => {
 
             <h2><GiChessRook className="section-icon" /> Key Features</h2>
             <ul>
-                <li><strong>Intelligent position search:</strong> retrieve similar chess positions using a non-rigid search algorithm that understands piece relationships and board structure.
+                <li><strong>Intelligent position search:</strong> retrieve similar chess positions using a non-rigid search algorithm that understands piece relationships and board structure. We use <b>BM25 informational retrieval model</b>.
                 </li>
                 <li><strong>Interactive interface:</strong> set up positions using our interactive chessboard or FEN notation, with support for both search and analysis.
                 </li>
                 <li><strong>Large database:</strong> browse our collection of chess games. You can explore historical matches or modern ones for deeper analysis, perform search or analysis on any existing position in out database.
                 </li>
-                <li><strong>Position analysis:</strong> analyze any position with Stockfish engine to get detailed evaluations and best move suggestions.
+                <li><strong>Position analysis:</strong> analyze any position with <b>Stockfish engine</b> to get detailed evaluations and best move suggestions.
                 </li>
                 <li><strong>Flexible filtering:</strong> aside from our information retrieval algorithm, you can use basic filtering tool to find games that match your criteria.
                 </li>
@@ -30,11 +30,11 @@ const Home = () => {
 
             <h2><GiChessBishop className="section-icon" /> How it Works</h2>
             <p>
-                Start by exploring our <NavLink to="/games">Games database</NavLink>, try out the <NavLink to="/search">Searching tool</NavLink> for retrieving similar chess positions, or use our <NavLink to="/analyze">Analysis tool</NavLink>!
+                Start by exploring our <NavLink to="/games">Games database</NavLink>, try out the <NavLink to="/search">Searching tool</NavLink> for retrieving similar chess positions, or use our <NavLink to="/analyze">Analysis tool</NavLink>! Read more in the <NavLink to="/about">About</NavLink> page.
             </p>
 
             <h2><GiChessKnight className="section-icon" /> Technology & References</h2>
-            <p>ChessQuery is powered by several excellent tools and research:</p>
+            <p>ChessQuery is powered by several tools and research:</p>
             <ul>
                 <li><a href="https://stockfishchess.org/" target="_blank" rel="noopener noreferrer">Stockfish</a> — powerful open-source chess engine</li>
                 <li><a href="https://chess-api.com/" target="_blank" rel="noopener noreferrer">Chess API</a> — free chess API that we use for position analysis</li>

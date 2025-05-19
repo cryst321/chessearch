@@ -63,15 +63,17 @@
   a {
     color: $eggplant;
     text-decoration: none;
-    transition: color 0.2s ease;
+    border-bottom: 1px solid rgba($eggplant, 0.3);
+    transition: color 0.2s ease, border-color 0.2s ease;
     
     &:hover {
       color: lighten($eggplant, 15%);
-      text-decoration: underline;
+      border-bottom-color: rgba(lighten($eggplant, 15%), 0.5);
     }
     
     &:visited {
       color: darken($eggplant, 10%);
+      border-bottom-color: rgba(darken($eggplant, 10%), 0.3);
     }
   }
 } 

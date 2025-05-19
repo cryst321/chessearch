@@ -8,7 +8,7 @@ import './MainLayout.scss';
 const MainLayout = () => {
     const location = useLocation();
     
-    const showDecorations = ['/analyze', '/search', '/games'].some(
+    const showDecorations = ['/analyze', '/search', '/games','/about'].some(
         path => location.pathname === path
     );
     
