@@ -34,8 +34,7 @@ export const loginUser = async (username, password) => {
         throw new Error(errorData || `Login failed with status: ${response.status}`);
     }
 
-    const userData = await checkStatus();
-    return userData;
+    return await checkStatus();
 };
 
 /**

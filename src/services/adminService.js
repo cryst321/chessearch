@@ -104,23 +104,22 @@ export const clearSearchIndex = async () => {
 };
 
 export const clearAllData = async () => {
-    try {
-        const response = await fetch('/api/admin/games', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+    const csrfToken = getCsrfToken();
+    const response = await fetch(`${API_ADMIN_BASE}/games`, {
+        method: 'DELETE',
+        headers: {
+            'X-XSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Failed to clear all data');
-        }
-
-        return await response.text();
-    } catch (error) {
-        throw new Error(error.message || 'Failed to clear all data');
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to clear all data');
     }
+
+    return await response.text();
 };
 
 /**
