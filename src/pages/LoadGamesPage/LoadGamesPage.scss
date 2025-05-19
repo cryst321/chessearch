@@ -15,6 +15,22 @@
     margin-bottom: 2rem;
   }
 
+  .index-stats {
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    p {
+      margin: 5px 0;
+      color: $dim-gray;
+      font-size: 14px;
+
+      &:first-child {
+        color: $eggplant;
+        font-weight: 500;
+      }
+    }
+  }
+
   .feedback-message {
     padding: 1rem;
     margin-bottom: 1.5rem;
@@ -134,9 +150,6 @@
       cursor: not-allowed;
     }
 
-    &.rebuild-button {
-
-    }
     &.clear-button {
       background-color: darken($battleship-gray, 10%);
       &:hover:not(:disabled) {
@@ -156,5 +169,20 @@
     color: $dim-gray;
     margin-top: 1rem;
     text-align: center;
+  }
+
+  .rebuild-progress {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: $dim-gray;
+    text-align: center;
+
+    p {
+      margin: 0;
+    }
   }
 }

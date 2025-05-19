@@ -3,7 +3,7 @@ function getCsrfToken() {
     return csrfCookie ? csrfCookie.split('=')[1] : null;
 }
 
-const API_ADMIN_BASE = 'http://localhost:8080/api/admin';
+export const API_ADMIN_BASE = 'http://localhost:8080/api/admin';
 
 /**
  * Upload PGN file to backend
@@ -96,4 +96,47 @@ export const clearSearchIndex = async () => {
     const responseText = await response.text();
     if (!response.ok) throw new Error(responseText || `Index clear failed: ${response.status}`);
     return responseText;
+};
+
+export const clearAllData = async () => {
+    try {
+        const response = await fetch('/api/admin/games', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Failed to clear all data');
+        }
+
+        return await response.text();
+    } catch (error) {
+        throw new Error(error.message || 'Failed to clear all data');
+    }
+};
+
+/**
+ * Get current index statistics
+ * @returns {Promise<Object>} Index statistics
+ * @throws {Error}
+ */
+export const getIndexStats = async () => {
+    const csrfToken = getCsrfToken();
+    const response = await fetch(`${API_ADMIN_BASE}/index-stats`, {
+        method: 'GET',
+        headers: { 
+            'X-XSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        credentials: 'include',
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to get index statistics');
+    }
+    
+    return await response.json();
 };
