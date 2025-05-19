@@ -184,6 +184,23 @@
   margin-bottom: 2rem;
 }
 
+.game-preview-card,
+.preview-link {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.game-preview-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  background-color: $lavender-blush;
+  border: 1px solid $pearl;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
 .preview-link {
   text-decoration: none;
@@ -192,7 +209,7 @@
   height: 100%;
   border-radius: 0.5rem;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  padding: 0.4rem;
+  padding: 0;
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
@@ -204,38 +221,12 @@
   }
 }
 
-
-.game-preview-card {
-  background-color: $lavender-blush;
-  border: 1px solid $pearl;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-
 .preview-board {
-  margin-bottom: 1rem;
+  width: 100%;
   display: flex;
   justify-content: center;
-
-  .board-placeholder {
-    height: 160px;
-    width: 160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: lighten($pearl, 5%);
-    border: 1px dashed $battleship-gray;
-    color: $dim-gray;
-    font-size: 0.9rem;
-    text-align: center;
-    border-radius: 4px;
-  }
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .preview-details {
