@@ -81,14 +81,22 @@
         }
 
         .screenshot-placeholder {
-            background-color: $pearl;
-            border: 2px dashed darken($pearl, 20%);
-            border-radius: 8px;
-            padding: 2rem;
+            background-color: transparent; // Зміни, щоб не було фону
+            border: none; // Прибери рамку
+            padding: 0; // Прибери відступи, якщо зображення вже мають їх
             margin: 1rem 0;
             text-align: center;
             color: $battleship-gray;
+
+            .section-screenshot {
+                max-width: 100%; // Зроби зображення адаптивним
+                height: auto; // Зберігай співвідношення сторін
+                border-radius: 8px; // Додай закруглені кути, якщо потрібно
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Додай тінь для кращого вигляду
+            }
         }
+
+
 
         .note {
             font-style: italic;
